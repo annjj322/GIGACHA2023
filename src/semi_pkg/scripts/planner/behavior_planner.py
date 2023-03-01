@@ -18,18 +18,15 @@ class BehaviorPlanner(threading.Thread):
 
         self.pl = PL(self.ego)
         
-        self.state_remember = "go"
-
     def run(self):
         while True:
             try:
                 self.mission.convert_lidar()
 
-                if self.state_remember != self.plan.state:
-                    self.state_remember = self.plan.state
-                    self.mission.time_checker = False
+                if self.plan.state == "go":
+                    self.mission.go()
 
-                if self.plan.state == "parking":
+                elif self.plan.state == "parking":
                     ### HANAMJA JUCHA ###
                     # self.mission.Parking_KCity_diagonal()
                     #####################

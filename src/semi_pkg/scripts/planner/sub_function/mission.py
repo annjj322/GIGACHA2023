@@ -41,7 +41,7 @@ class Mission():
 
     def go(self):
         self.ego.target_estop = 0x00
-        self.ego.target_gear = 1
+        self.ego.target_gear = 0
         self.ego.target_speed = self.speed
         self.plan.behavior_decision = "driving"
 

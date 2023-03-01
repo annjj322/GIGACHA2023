@@ -14,7 +14,7 @@ class Motion():
         self.cut_path = self.shared.cut_path # from global path (find_local_path)
         self.lattice_path = self.shared.lattice_path # from LPP []
 
-        self.lane_weight = [10000, 1000, 0, 10000]
+        self.lane_weight = [1000, 1000, 1000, 1000, 1000, 1000, 0]
         self.isObstacle = [1000, 1000, 1000, 1000]
         self.min_val = 0
         self.check = 0
@@ -141,7 +141,7 @@ class Motion():
             local_current_point = det_t.dot(world_current_point)
 
             # lane_off_set = [3.5, 0, -3.5, -4]
-            lane_off_set = [3.5, 1.1, 0, -1.1]
+            lane_off_set = [5.5, 3.5, 1.1, 0, -1.1, -2.2, -3.3]
             local_lattice_points = []
             for i in range(len(lane_off_set)):
                 local_lattice_points.append([local_end_point[0][0], local_end_point[1][0] + lane_off_set[i], 1])
@@ -203,7 +203,7 @@ class Motion():
                     tmp_translation = [self.cut_path.x[i], self.cut_path.y[i]]
                     tmp_t = np.array([[cos(tmp_theta), -sin(tmp_theta), tmp_translation[0]], [sin(tmp_theta), cos(tmp_theta), tmp_translation[1]], [0,0,1]])
 
-                    for lane_num in range(4):
+                    for lane_num in range(len(lane_off_set)):
                         local_result = np.array([[0], [lane_off_set[lane_num]], [1]])
                         global_result = tmp_t.dot(local_result)
 
@@ -213,8 +213,8 @@ class Motion():
                         lattice[lane_num].y.append(tmp_y)
 
         if len(self.lattice_path) == 0:
-            for i in range(4):
+            for i in range(len(lane_off_set)):
                 self.lattice_path.append(lattice[i])
         else:
-            for i in range(4):
+            for i in range(len(lane_off_set)):
                 self.lattice_path[i] = lattice[i]

@@ -97,3 +97,4 @@ if __name__ == "__main__":
     args = argparser.parse_args()
     master = Master(args, ui_rate=10)
     master.start()
+    print("sss")

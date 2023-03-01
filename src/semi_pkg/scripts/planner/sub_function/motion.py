@@ -115,13 +115,15 @@ class Motion():
         
         look_distance = int(self.ego.speed * 2)
 
+        # look distance
         if look_distance < 2 :
             look_distance = 2
         if look_distance > 10 :
             look_distance = 10
-        
+
         look_distance = 35
 
+        # 변환행렬
         if len(self.cut_path.x) > look_distance :
             global_ref_start_point = (self.cut_path.x[0], self.cut_path.y[0])
             global_ref_start_next_point = (self.cut_path.x[1], self.cut_path.y[1])

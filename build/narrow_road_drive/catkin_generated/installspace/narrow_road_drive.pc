@@ -1,0 +1,8 @@
+prefix=/home/gigacha/TEAM-GIGACHA/install
+
+Name: narrow_road_drive
+Description: Description of narrow_road_drive
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

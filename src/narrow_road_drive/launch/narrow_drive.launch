@@ -1,0 +1,4 @@
+<launch>    
+    <node name="ObstacleDetector" pkg="narrow_road_drive" type="obstacledetector" output="screen" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find narrow_road_drive)/rviz/narrow_rviz.rviz" />
+</launch>

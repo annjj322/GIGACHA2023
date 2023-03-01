@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <node name="Localization" pkg="local_pkg" type="local.py" respawn="true"/>
+
+  <node name="Serial_IO" pkg="local_pkg" type="serial_io.py" respawn="true"/>
+</launch>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <node name="Simul_GPS_IMU" pkg="semi_pkg" type="sensors_simul.py" respawn="true"/>
+  <node name="Localization" pkg="local_pkg" type="local.py" respawn="true"/>
+  <node name="master" pkg="semi_pkg" type="master.py" respawn="true"/>
+  <node name="Serial_IO" pkg="local_pkg" type="serial_io.py" respawn="true"/>
+</launch>

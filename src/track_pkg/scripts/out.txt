@@ -1,0 +1,19 @@
+Exception ignored in: <module 'threading' from '/usr/lib/python3.6/threading.py'>
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/threading.py", line 1294, in _shutdown
+    t.join()
+  File "/usr/lib/python3.6/threading.py", line 1056, in join
+    self._wait_for_tstate_lock()
+  File "/usr/lib/python3.6/threading.py", line 1072, in _wait_for_tstate_lock
+    elif lock.acquire(block, timeout):
+  File "/opt/ros/melodic/lib/python2.7/dist-packages/rospy/core.py", line 606, in _ros_signal
+    signal_shutdown("signal-"+str(sig))
+  File "/opt/ros/melodic/lib/python2.7/dist-packages/rospy/core.py", line 602, in signal_shutdown
+    rospy.rostime.wallsleep(0.1) #hack for now until we get rid of all the extra threads
+  File "/opt/ros/melodic/lib/python2.7/dist-packages/rospy/rostime.py", line 277, in wallsleep
+    time.sleep(duration) 
+  File "/opt/ros/melodic/lib/python2.7/dist-packages/rospy/core.py", line 610, in _ros_signal
+    prev_handler(sig, stackframe)
+  File "/home/gigacha/TEAM-GIGACHA/src/track_pkg/scripts/utils/sig_int_handler.py", line 10, in signal_handler
+    sys.exit(0)
+SystemExit: 0

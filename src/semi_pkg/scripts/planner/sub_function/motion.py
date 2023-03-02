@@ -19,6 +19,10 @@ class Motion():
         self.min_val = 0
         self.check = 0
 
+        ##### jmgay edited #####
+        self.num_of_lanes = None
+        ########################
+
     def select_trajectory(self):
         self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
 
@@ -142,6 +146,12 @@ class Motion():
 
             # lane_off_set = [3.5, 0, -3.5, -4]
             lane_off_set = [5.5, 3.5, 1.1, 0, -1.1, -2.2, -3.3]
+
+            #### jmgay edited #####
+            self.num_of_lanes = len(lane_off_set)
+            print("Number of lanes : ", self.num_of_lanes)
+            #######################
+
             local_lattice_points = []
             for i in range(len(lane_off_set)):
                 local_lattice_points.append([local_end_point[0][0], local_end_point[1][0] + lane_off_set[i], 1])

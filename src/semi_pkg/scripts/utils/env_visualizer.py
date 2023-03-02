@@ -242,6 +242,10 @@ class Visualizer(threading.Thread):
                 self.vis_local_path.header.stamp = rospy.Time.now()
                 self.vis_local_path_pub.publish(self.vis_local_path)
 
+                #### jmgay editing ####
+                # for i in range()
+                #######################
+                
                 self.vis_lattice_path_0.header.stamp = rospy.Time.now()
                 self.vis_lattice_path_0_pub.publish(self.vis_lattice_path_0)
 

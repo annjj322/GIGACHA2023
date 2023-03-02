@@ -142,6 +142,7 @@ class Motion():
 
             # lane_off_set = [3.5, 0, -3.5, -4]
             lane_off_set = np.array([5.5, 3.5, 1.1, 0, -1.1, -2.2, -3.3])
+
             local_lattice_points = []
             for i in range(len(lane_off_set)):
                 local_lattice_points.append([local_end_point[0][0], local_end_point[1][0] + lane_off_set[i], 1])

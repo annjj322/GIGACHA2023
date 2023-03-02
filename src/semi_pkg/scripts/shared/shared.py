@@ -19,7 +19,6 @@ class Shared:
         self.cut_path = Path()
         self.lattice_path = []
         self.selected_lane = 1
-        self.num_of_lanes = None
         self.plan = Plan()
 
         # for parking

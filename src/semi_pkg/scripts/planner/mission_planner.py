@@ -15,6 +15,8 @@ class MissionPlanner(threading.Thread):
     def run(self):
         while True:
             try:
+                print("muyaho")
+                print(self.shared.num_of_lanes)
                 if self.shared.perception.signname == "static_obstacle":
                     self.plan.state = "static_obstacle_detected"
 

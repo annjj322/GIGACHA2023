@@ -22,12 +22,14 @@ class MotionPlanner(threading.Thread):
         self.cut_path = self.shared.cut_path
         self.lattice_path = self.shared.lattice_path  # from LPP []
 
-        self.motion = Motion(self.shared, self.plan, self.ego)
+        self.motion = Motion(sh=self.shared, pl=self.plan, eg=self.ego)
         self.park_motion = Parking_Motion(self.shared, self.plan, self.ego)
 
     def run(self):
         while True:
             try:
+                print("yaho")
+                print()
                 findLocalPath(self.global_path, self.ego, self.cut_path)
                 self.motion.path_maker()  # lattice_path
 

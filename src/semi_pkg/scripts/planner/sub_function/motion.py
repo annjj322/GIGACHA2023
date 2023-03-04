@@ -14,7 +14,7 @@ class Motion():
         self.cut_path = self.shared.cut_path # from global path (find_local_path)
         self.lattice_path = self.shared.lattice_path # from LPP []
 
-        self.lane_weight = [1000, 1000, 1000, 1000, 1000, 1000, 0]
+        self.lane_weight = [1000, 1000, 1000, 0, 1000, 1000, 1000]
         self.lane_offset = [5.5, 3.5, 1.1, 0, -1.1, -3.5, -5.5]
         self.isObstacle = [1000, 1000, 1000, 1000]
         self.min_val = 0

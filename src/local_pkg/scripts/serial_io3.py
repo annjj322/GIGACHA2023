@@ -36,7 +36,8 @@ class Serial_IO:
         th_serialRead.start()
 
         # rospy Rate
-        rate = rospy.Rate(20)
+        rt = 20
+        rate = rospy.Rate(rt)
         #############################################################
         #############################################################
 
@@ -54,7 +55,7 @@ class Serial_IO:
             self.serialWrite()
             self.count += 1
             self.count2 += 1
-            if self.count2>=sprint_time_sec*rate and self.count%brake_freq_sec*rate==0: # 5sec full sprint, brake+=10 per 0.75sec
+            if self.count2>=(sprint_time_sec*rt) and self.count%(brake_freq_sec*rt)==0: # 5sec full sprint, brake+=10 per 0.75sec
                 self.control_input.brake+=10
                 
             rate.sleep()
@@ -100,7 +101,7 @@ class Serial_IO:
         if self.control_input.brake > 200:
             self.control_input.brake = 200
 
-        result = struct.pack(
+        result = struct.pack(  #
             ">BBBBBBHhBBBB",
             0x53,
             0x54,

@@ -44,22 +44,46 @@ class Serial_IO:
 
         ### touch me... haang...
         self.control_input.speed = 20 # chogi speed
-        self.control_input.steer = 1 # chogi steer : going a little left when steer is 0, so 1(change it!)
+        self.control_input.steer = 2 # chogi steer : going a little left when steer is 0, so 1(change it!)
         self.control_input.brake = 0 # chogi brake
      
         # Main Loop
-        sprint_time_sec = 5 # touch me!
-        brake_freq_sec = 0.75 # touch me!
-
+        sprint_time_sec = 3 # touch me!
+        change_sec = 0.75 # touch me!
+#######################################only brake control ###########################################
+        # while not rospy.is_shutdown():
+        #     self.serialWrite()
+        #     self.count += 1
+        #     self.count2 += 1
+        #     if self.count2>=sprint_time_sec*rt and self.count%change_sec*rt==0: 
+        #         self.control_input.brake+=10
+        #    rate.sleep()
+######################################################################################                
+        # while not rospy.is_shutdown():
+        #     self.serialWrite()
+        #     self.count += 1
+        #     self.count2 += 1
+        #     if self.count2>=sprint_time_sec*rt and self.count%change_sec*rt==0:
+        #         self.control_input.brake+=10
+        #         self.control_input.speed-=1
+        #     rate.sleep()
+######################################################################################                
+        value = 2
+        maxbrake = 30
         while not rospy.is_shutdown():
             self.serialWrite()
             self.count += 1
             self.count2 += 1
-            if self.count2>=(sprint_time_sec*rt) and self.count%(brake_freq_sec*rt)==0: # 5sec full sprint, brake+=10 per 0.75sec
-                self.control_input.brake+=10
+            self.control_input.brake = 20
+            if self.control_input.speed>3: 
+                if self.count2>=(sprint_time_sec*rt) and self.count%(change_sec*rt)==0: 
+                    self.control_input.brake-=value
+                    self.control_input.speed-=value
+            else:
+                self.control_input.speed = 3
+                self.control_input.brake = 0
                 
             rate.sleep()
-
 
     def serialRead(self):
         print("Serial_IO: Serial reading thread successfully started")
@@ -67,7 +91,8 @@ class Serial_IO:
         while True:
             
             print(f"Serial_IO: Reading serial {self.alive}")
-
+            print("Current speed is : ", self.control_input.speed)
+            print("Current brake is : ", self.control_input.brake)
             packet = self.ser.read_until(b'\x0d\x0a')
             # print(len(packet))
             if len(packet) == 18:
@@ -101,7 +126,7 @@ class Serial_IO:
         if self.control_input.brake > 200:
             self.control_input.brake = 200
 
-        result = struct.pack(  #
+        result = struct.pack(
             ">BBBBBBHhBBBB",
             0x53,
             0x54,
@@ -118,6 +143,7 @@ class Serial_IO:
             0x0D,
             0x0A
         )
+        
         self.ser.write(result)
 
 

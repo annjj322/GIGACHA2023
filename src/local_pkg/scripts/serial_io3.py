@@ -18,7 +18,7 @@ class Serial_IO:
         self.count2 = 0
         self.k = 0.55
         self.WB = 1.04 # wheel base
-        self.lookahead_default = 1
+        self.lookahead_default = 10
         self.global_path_x = []
         self.global_path_y = []
         ################### JMGAY : No TOUCH!! ####################
@@ -61,7 +61,7 @@ class Serial_IO:
 
         ### touch me... haang...
         self.control_input.speed = 5 # chogi speed
-        # self.control_input.steer = 2 # chogi steer : going a little left when steer is 0, so 1(change it!)
+        self.control_input.steer = 2 # chogi steer : going a little left when steer is 0, so 1(change it!)
         self.control_input.brake = 0 # chogi brake
      
         # Main Loop
@@ -72,8 +72,7 @@ class Serial_IO:
     def run(self):
         rate = rospy.Rate(self.rt)
         while not rospy.is_shutdown():
-            print("hi ", self.old_nearest_point_index)
-            print()
+            print("current index is ", self.old_nearest_point_index, "\n")
             self.control_input.steer = self.Pure_pursuit()
             self.serialWrite()
             rate.sleep()
@@ -178,7 +177,7 @@ class Serial_IO:
         ind = np.argmin(new_d)
         self.dx = []
         self.dy = []
-        #     self.old_nearest_point_index = ind
+        self.old_nearest_point_index = ind
         # else:
         #     ind = self.old_nearest_point_index
         #     distance_this_index = self.calc_distance(self.dx[ind], self.dy[ind])

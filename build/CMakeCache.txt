@@ -472,7 +472,7 @@ gtest_hide_internal_symbols:BOOL=OFF
 gtest_main_LIB_DEPENDS:STATIC=general;-lpthread;general;gtest;
 
 //Path to a library.
-lib:FILEPATH=/opt/ros/melodic/lib/libxmlrpcpp.so
+lib:FILEPATH=/opt/ros/melodic/lib/libtf.so
 
 //Value Computed by CMake
 local_pkg_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/local_pkg
@@ -497,6 +497,9 @@ narrow_road_drive_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/narrow_road
 
 //Value Computed by CMake
 narrow_road_drive_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/narrow_road_drive
+
+//The directory containing a CMake configuration file for nav_msgs.
+nav_msgs_DIR:PATH=/opt/ros/melodic/share/nav_msgs/cmake
 
 //The directory containing a CMake configuration file for nodelet.
 nodelet_DIR:PATH=/opt/ros/melodic/share/nodelet/cmake
@@ -577,6 +580,21 @@ rtcm_msgs_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/ublox_f9p/rtcm_msgs
 rtcm_msgs_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/ublox_f9p/rtcm_msgs
 
 //Value Computed by CMake
+sbgECom_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/sbg_ros_driver/external/sbgECom
+
+//Dependencies for target
+sbgECom_LIB_DEPENDS:STATIC=
+
+//Value Computed by CMake
+sbgECom_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/sbg_ros_driver/external/sbgECom
+
+//Value Computed by CMake
+sbg_driver_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/sbg_ros_driver
+
+//Value Computed by CMake
+sbg_driver_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/sbg_ros_driver
+
+//Value Computed by CMake
 semi_pkg_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/semi_pkg
 
 //Value Computed by CMake
@@ -599,6 +617,9 @@ tf2_DIR:PATH=/opt/ros/melodic/share/tf2/cmake
 
 //The directory containing a CMake configuration file for tf2_eigen.
 tf2_eigen_DIR:PATH=/opt/ros/melodic/share/tf2_eigen/cmake
+
+//The directory containing a CMake configuration file for tf2_geometry_msgs.
+tf2_geometry_msgs_DIR:PATH=/opt/ros/melodic/share/tf2_geometry_msgs/cmake
 
 //The directory containing a CMake configuration file for tf2_msgs.
 tf2_msgs_DIR:PATH=/opt/ros/melodic/share/tf2_msgs/cmake
@@ -865,7 +886,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=27
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=24
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

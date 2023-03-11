@@ -13,6 +13,7 @@ import json
 import matplotlib.pyplot as plt
 from geometry_msgs.msg import PoseArray
 import numpy as np
+import time
 
 
 class Serial_IO:
@@ -36,8 +37,8 @@ class Serial_IO:
         self.objPosition_x = []
         self.objPosition_y = []
 
-        self.stop_index = 497
-
+        self.stop_index = [800, 1200, 2500,4450]
+       
         # Serial Connect
         # self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
         self.ser = serial.Serial("/dev/ttyUSB0", 115200) # Simulation
@@ -70,7 +71,7 @@ class Serial_IO:
 
         # Pure Pursuit coefficient
         self.lookahead_default = 10
-        self.old_nearest_point_index = None
+        self.ego_index = None
 
         # Stop coefficient
         self.stop_index_coefficient = 10
@@ -88,31 +89,59 @@ class Serial_IO:
         self.setValue(0,0,0)
 
     def run(self):
-        cnt = 0
-        cnt_stop = 0
+        timer_cnt = 5
+        #stop_bool = False
         rate = rospy.Rate(self.rt)
-
+        i=0
+    
         # show global path
         # self.plot_global_path()
         
         while not rospy.is_shutdown():
+
             self.setValue(15, self.pure_pursuit(), 0)
-            self.stop_at_target_index(self.stop_index)
+
+            self.stop_at_target_index(self.stop_index[i])
+            if self.stop_index[i]+2 >= self.ego_index >= self.stop_index[i]-2: #and stop_bool == False:
+                timer_cnt -= 1/self.rt
+
+            
+
+            if timer_cnt < 4.95000001:
+                self.setValue(0,0,100)
+                if abs(timer_cnt) < 0.00001:
+                    #stop_bool = True
+                    timer_cnt = 5
+                    i+=1
+                print("######### timer_cnt : {} ############".format(timer_cnt))
+
+
+            
+            # if self.ego_index == self.stop_index_2 and self.ego_info.speeed == 0:
+            #     time.sleep(3)
+            # else:
+            #     self.stop_at_target_index(self.stop_index_2)
+
+            
+            # if self.ego_index == self.stop_index_3 and self.ego_info.speeed == 0:
+            #     time.sleep(3)
+            # else:
+            #     self.stop_at_target_index(self.stop_index_3)
             self.serialWrite()
             
 
         
             ########################### print values ##############################
-            print("current index is ", self.old_nearest_point_index, "\n")
+            print("current index is ", self.ego_index, "\n")
             print("obstacle x : ", self.obj_x)
             print("obstacle y : ", self.obj_y)
-            print("stop_index : ", self.stop_index)
+            # print("stop_index : ", self.stop_index_1)
             #######################################################################
 
             # # plot
             # if cnt % (0.1*self.rt) == 0: # always per 0.1sec
             #     self.save_position()
-            #     if self.stop_index-5 < self.old_nearest_point_index < self.stop_index+5 :#and self.old_nearest_point_index > 1050
+            #     if self.stop_index-5 < self.ego_index < self.stop_index+5 :#and self.ego_index > 1050
             #         cnt_stop += 1 # stop index +- 50cm -> cnt_stop+1
                 
             # cnt += 1
@@ -202,7 +231,7 @@ class Serial_IO:
             self.obstacle_info_y = msg.poses[0].orientation.y # relative coordinate obstacle y
             self.find_obstacle()
             # self.stop_index = self.target_index()
-            self.stop_index = 497
+            # self.stop_index = 497
     
     def find_obstacle(self):
         # # for plot : jy
@@ -249,7 +278,7 @@ class Serial_IO:
         return sqrt(x**2+y**2)
 
     def search_ego_index(self):
-        # if self.old_nearest_point_index is None:
+        # if self.ego_index is None:
         d = []
         self.dx = []
         self.dy = []
@@ -265,9 +294,9 @@ class Serial_IO:
         self.dx = []
         self.dy = []
         
-        self.old_nearest_point_index = ind
+        self.ego_index = ind
         # else:
-        #     ind = self.old_nearest_point_index
+        #     ind = self.ego_index
         #     distance_this_index = self.calc_distance(self.dx[ind], self.dy[ind])
         #     while True:
         #         distance_next_index = self.calc_distance(self.global_path_x[ind + 1], self.global_path_y[ind + 1])
@@ -277,7 +306,7 @@ class Serial_IO:
         #         ind = ind + 1 if (ind + 1) < len(self.global_path_x) else ind
         #         distance_this_index = distance_next_index
         
-        #     self.old_nearest_point_index = ind
+        #     self.ego_index = ind
 
         Lf = self.k * self.ego_info.speeed + self.lookahead_default  # update look ahead distance
 
@@ -340,51 +369,50 @@ class Serial_IO:
         plt.ylabel('velocity(m/s)')
         plt.show()
 
-    def stop_if_end(self): # not proved -> if it work, plot function activate here
-        if self.old_nearest_point_index == len(self.global_path_x):
-            self.setValue(0, 0, 45)
-            print("STOPPING.........")
-
     def stop_at_target_index(self, target_index): # not proved
         if target_index is not None:
-            # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
-            if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
+            # if self.ego_index >= target_index - self.stop_index_coefficient:
+            if target_index - 30 >= self.ego_index >= target_index - 60:
                 # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
                 # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
-                self.setValue(0, self.control_input.steer, 5)
+                self.setValue(8, self.control_input.steer, 5)
                 print("Trying to stop(FAR)")
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            # if self.old_nearest_point_index >= target_index:
-            elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
-                self.setValue(3, self.control_input.steer, 15)
+            # if self.ego_index >= target_index:
+            elif target_index - 10 > self.ego_index >= target_index - 30:
+                self.setValue(3, self.control_input.steer, 0)
                 print("Trying to stop(CLOSE)")
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            elif self.old_nearest_point_index >= target_index:
-                self.setValue(0, self.control_input.steer, 50)
+            elif target_index - 1 > self.ego_index >= target_index - 10:
+                self.setValue(1, self.control_input.steer, 0)
                 print("Trying to stop(CLOSE)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            elif target_index + 1 >= self.ego_index >= target_index - 1:
+                self.setValue(0, self.control_input.steer, 50)
+                print("Trying to stop(VERY CLOSE)")
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
             else:
                 pass
-        else: ### just for simul
-            # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
-            if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
-                # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
-                # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
-                self.setValue(0, self.control_input.steer, 5)
-                print("Trying to stop(FAR)")
-                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            # if self.old_nearest_point_index >= target_index:
-            elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
-                self.setValue(3, self.control_input.steer, 15)
-                print("Trying to stop(CLOSE)")
-                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            elif self.old_nearest_point_index >= target_index:
-                self.setValue(0, self.control_input.steer, 50)
-                print("Trying to stop(CLOSE)")
-                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            else:
-                pass
-
+    # def stop_at_target_index(self, target_index): # not proved
+    #     if target_index is not None:
+    #         # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
+    #         if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
+    #             # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
+    #             # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
+    #             self.setValue(0, self.control_input.steer, 5)
+    #             print("Trying to stop(FAR)")
+    #             print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+    #         # if self.old_nearest_point_index >= target_index:
+    #         elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
+    #             self.setValue(3, self.control_input.steer, 15)
+    #             print("Trying to stop(CLOSE)")
+    #             print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+    #         elif self.old_nearest_point_index >= target_index:
+    #             self.setValue(0, self.control_input.steer, 50)
+    #             print("Trying to stop(CLOSE)")
+    #             print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+    #         else:
+    #             pass
 
     def setValue(self, speed, steer, brake):
         self.control_input.speed = speed

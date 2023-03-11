@@ -8,7 +8,7 @@ import threading
 import struct
 import rospy
 from math import sqrt, atan2, sin, atan, cos, sqrt
-from numpy import degrees, radians, hypot, array, argmin
+from numpy import degrees, radians, hypot, array, argmin, arange
 import json
 import matplotlib.pyplot as plt
 from geometry_msgs.msg import PoseArray
@@ -18,7 +18,8 @@ import time
 
 class Serial_IO:
     def __init__(self):
-        self.k = 0.55
+        # self.k = 0.55
+        self.k = 0.15
         self.WB = 1.04 # wheel base
 
         # Global Path
@@ -37,7 +38,8 @@ class Serial_IO:
         self.objPosition_x = []
         self.objPosition_y = []
 
-        self.stop_index = [800, 1200, 2500,4450]
+        # self.stop_index = [800, 1200, 2500, 4450]
+        self.stop_index = [None, None, None, None]
        
         # Serial Connect
         # self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
@@ -70,7 +72,8 @@ class Serial_IO:
         self.obstacle_info_y = 0
 
         # Pure Pursuit coefficient
-        self.lookahead_default = 10
+        # self.lookahead_default = 10
+        self.lookahead_default = 4
         self.ego_index = None
 
         # Stop coefficient
@@ -89,15 +92,19 @@ class Serial_IO:
         self.setValue(0,0,0)
 
     def run(self):
+        plot_cnt = 0
         timer_cnt = 5
-        #stop_bool = False
         rate = rospy.Rate(self.rt)
-        i=0
-    
-        # show global path
-        # self.plot_global_path()
-        
+        i = 0
+
+
+
         while not rospy.is_shutdown():
+    
+            self.obj_x = self.global_path_x[self.stop_index[i]]
+            self.obj_y=  self.global_path_y[self.stop_index[i]]
+
+            plot_cnt += 1
 
             self.setValue(15, self.pure_pursuit(), 0)
 
@@ -113,6 +120,9 @@ class Serial_IO:
                     #stop_bool = True
                     timer_cnt = 5
                     i+=1
+                    self.plot_graph(i) # Everything
+                    # self.plot_velocity_graph("Velocity_graph_{}".format(i)) # velocity graph
+                    
                 print("######### timer_cnt : {} ############".format(timer_cnt))
 
 
@@ -138,18 +148,17 @@ class Serial_IO:
             # print("stop_index : ", self.stop_index_1)
             #######################################################################
 
-            # # plot
-            # if cnt % (0.1*self.rt) == 0: # always per 0.1sec
-            #     self.save_position()
-            #     if self.stop_index-5 < self.ego_index < self.stop_index+5 :#and self.ego_index > 1050
-            #         cnt_stop += 1 # stop index +- 50cm -> cnt_stop+1
+            # plot
+            if plot_cnt % (0.1*self.rt) == 0: # always per 0.1sec
+                self.save_position()
+
                 
             # cnt += 1
             # # if cnt % (50*self.rt) == 0: # activate after 50 second
             
             # if cnt_stop > 20 : # if cnt_stop is over 20 (2 seconds in stop_index+-50)
-            #     self.plot_present_route() # global path, current path, obstacle position
-            #     self.velocity_graph() # velocity graph
+            #     self.plot_graph() # global path, current path, obstacle position
+            #     self.plot_velocity_graph() # velocity graph
             #     break
             # else:
             #     pass # plot graph 
@@ -338,36 +347,43 @@ class Serial_IO:
         steer = max(min(tmp_steer, 27.0), -27.0) 
         return steer
 
-    def plot_global_path(self):
+    def plot_global_path(self, title):
         plt.figure(0)
         plt.plot(self.global_path_x,self.global_path_y,'k-',label='global_path')
-        plt.grid()
-        plt.legend()
-        plt.show()
+        # plt.grid()
+        # plt.legend()
+        plt.savefig(title)
 
-    def plot_present_route(self):
-        plt.figure(1)
+    def plot_graph(self, i):
+        plt.figure(i+1)
         plt.plot(self.global_path_x,self.global_path_y,'k-',label='global_path')
         plt.plot(self.curPosition_x,self.curPosition_y,'ro',label='present_route',ms=2)
         plt.plot(self.objPosition_x,self.objPosition_y,'bo',label='obstacle_position')
         plt.grid()
-        plt.legend()
-        plt.show()
+        plt.legend(loc="lower right")
+        plt.title("Coordinate System : GPS(ENU)")
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.savefig("Current_path_{}".format(i))
 
-    def velocity_graph(self):
         t = 0.5
-        for i in range(len(self.curPosition_x)//5-1):
-            dx = self.curPosition_x[5*(i+1)]-self.curPosition_x[5*i]
-            dy = self.curPosition_y[5*(i+1)]-self.curPosition_y[5*i]
+
+        for j in range(len(self.curPosition_x)//5-1):
+            dx = self.curPosition_x[5*(j+1)]-self.curPosition_x[5*j]
+            dy = self.curPosition_y[5*(j+1)]-self.curPosition_y[5*j]
             self.velocity.append(hypot(dx,dy)/t)
         
-        graph_time = range(0,len(self.velocity)/2,t)
+        graph_time = arange(0,len(self.velocity)/2,t)
 
-        plt.figure(1)
-        plt.plot(self.velocity,graph_time)
-        plt.xlabel('time(x)')
+        plt.figure(i+200)
+        plt.plot(graph_time, self.velocity,)
+        plt.title("Time-Velocity")
+        plt.xlabel('time(s)')
         plt.ylabel('velocity(m/s)')
-        plt.show()
+        plt.grid()
+        plt.savefig("Velocity_{}".format(i))
+        self.velocity = []
+        
 
     def stop_at_target_index(self, target_index): # not proved
         if target_index is not None:

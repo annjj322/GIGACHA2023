@@ -33,6 +33,7 @@ class EllipseD():
 
     def gps_call_back(self, data):
         self.heading = data.true_heading
+        print("here!!!!!!!!!!!1", data.true_heading)
         
     def main(self):
         self.msg.x = self.x

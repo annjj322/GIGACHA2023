@@ -38,8 +38,11 @@ class Serial_IO:
         self.objPosition_x = []
         self.objPosition_y = []
 
+        # Reading Global Path
+        self.read_global_path()
+
         # self.stop_index = [800, 1200, 2500, 4450]
-        self.stop_index = None
+        self.stop_index = len(self.global_path_x)
        
         # Serial Connect
         self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
@@ -64,8 +67,7 @@ class Serial_IO:
         self.ego_info = Local()
         self.control_input = Control_Info()
 
-        # Reading Global Path
-        self.read_global_path()
+        
 
         # self.obstacle_info = PoseArray()
         self.obstacle_info_x = 0
@@ -93,38 +95,38 @@ class Serial_IO:
 
     def run(self):
         plot_cnt = 0
-        timer_cnt = 5
+        self.timer_cnt = 5
         rate = rospy.Rate(self.rt)
         i = 0
 
 
 
         while not rospy.is_shutdown():
-    
-            self.obj_x = self.global_path_x[self.stop_index]
-            self.obj_y=  self.global_path_y[self.stop_index]
 
             plot_cnt += 1
 
-            self.setValue(15, self.pure_pursuit(), 0)
+            self.setValue(6, self.pure_pursuit(), 0)
+            print("steer : ", self.control_input.steer)
 
             self.stop_at_target_index(self.stop_index)
-            if self.stop_index+2 >= self.ego_index >= self.stop_index-2: #and stop_bool == False:
-                timer_cnt -= 1/self.rt
+                    
+            
+            
 
             
 
-            if timer_cnt < 4.95000001:
+            if self.timer_cnt < 4.95000001:
                 self.setValue(0,0,100)
-                self.stop_index = None
-                if abs(timer_cnt) < 0.00001:
-                    #stop_bool = True
-                    timer_cnt = 5
+                
+                if abs(self.timer_cnt) < 0.00001:
+                    self.stop_index = None
+                
+                    self.timer_cnt = 5
                     i+=1
                     self.plot_graph(i) # Everything
                     # self.plot_velocity_graph("Velocity_graph_{}".format(i)) # velocity graph
                     
-                print("######### timer_cnt : {} ############".format(timer_cnt))
+                print("######### self.timer_cnt : {} ############".format(self.timer_cnt))
 
 
             
@@ -144,9 +146,7 @@ class Serial_IO:
         
             ########################### print values ##############################
             print("current index is ", self.ego_index, "\n")
-            print("obstacle x : ", self.obj_x)
-            print("obstacle y : ", self.obj_y)
-            # print("stop_index : ", self.stop_index_1)
+            print("stop_index : ", self.stop_index)
             #######################################################################
 
             # plot
@@ -240,8 +240,12 @@ class Serial_IO:
             self.obstacle_info_x = msg.poses[0].orientation.x # relative coordinate obstacle x
             self.obstacle_info_y = msg.poses[0].orientation.y # relative coordinate obstacle y
             self.find_obstacle()
+
+            if self.stop_index is not None:
             # self.stop_index = self.target_index()
-            # self.stop_index = 497
+                if abs(self.stop_index - self.ego_index) >= 50: # 5m -> No Update. Fixxed Value.            
+                    self.stop_index = self.target_index()   
+                    # self.stop_index = 497
     
     def find_obstacle(self):
         # # for plot : jy
@@ -330,7 +334,7 @@ class Serial_IO:
 
     def pure_pursuit(self):
         ind,Lf=self.search_ego_index()
-        lookahead = min(Lf, 6)
+        lookahead = min(Lf, 6) # lookahead is skkkkkkkkkkkkkkkkull water
         target_index = ind  #self.ego_info.x'''''' + 49
         
         target_x, target_y = self.global_path_x[target_index], self.global_path_y[target_index]
@@ -346,7 +350,7 @@ class Serial_IO:
             tmp_steer *= 0.8
 
         steer = max(min(tmp_steer, 27.0), -27.0) 
-        return steer
+        return 0
 
     def plot_global_path(self, title):
         plt.figure(0)
@@ -412,22 +416,26 @@ class Serial_IO:
     #             pass
     def stop_at_target_index(self, target_index):
         if target_index is not None:
-            # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
-            if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
+            # if self.ego_index >= target_index - self.stop_index_coefficient:
+            if target_index - 10 >= self.ego_index >= target_index - 60:
                 # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
                 # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
                 self.setValue(0, self.control_input.steer, 5)
                 print("Trying to stop(FAR)")
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            # if self.old_nearest_point_index >= target_index:
-            elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
+            # if self.ego_index >= target_index:
+            elif target_index - 2 > self.ego_index >= target_index - 20:
                 self.setValue(3, self.control_input.steer, 15)
                 print("Trying to stop(CLOSE)")
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-            elif self.old_nearest_point_index >= target_index:
+            elif target_index + 2 >= self.ego_index >= target_index - 2:
+                self.timer_cnt -= 1/self.rt
                 self.setValue(0, self.control_input.steer, 50)
-                print("Trying to stop(CLOSE)")
+                print("Trying to stop(VERY CLOSE)")
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            # elif self.ego_index >= target_index + 1:
+            #     print("Trying to stop(CLOSE)")
+            #     print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
             else:
                 pass
 

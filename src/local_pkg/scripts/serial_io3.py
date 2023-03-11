@@ -318,7 +318,7 @@ class Serial_IO:
             dy = self.curPosition_y[5*(i+1)]-self.curPosition_y[5*i]
             self.velocity.append(hypot(dx,dy)/t)
         
-        graph_time = range(len(self.velocity)*2)
+        graph_time = range(0,len(self.velocity)/2,t)
 
         plt.figure(1)
         plt.plot(self.velocity,graph_time)

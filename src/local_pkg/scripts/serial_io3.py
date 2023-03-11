@@ -92,6 +92,7 @@ class Serial_IO:
         self.setValue(0,0,0)
 
     def run(self):
+        plot_cnt = 0
         timer_cnt = 5
         #stop_bool = False
         rate = rospy.Rate(self.rt)
@@ -100,7 +101,7 @@ class Serial_IO:
         # self.plot_global_path()
         
         while not rospy.is_shutdown():
-
+            plot_cnt += 1
             self.setValue(15, self.pure_pursuit(), 0)
 
             self.stop_at_target_index(self.stop_index)
@@ -112,10 +113,12 @@ class Serial_IO:
             if timer_cnt < 4.95000001:
                 self.setValue(0,0,100)
                 self.stop_index = None
-                if abs(timer_cnt) < 0.00001:
-                    #stop_bool = True
+                if abs(timer_cnt) < 0.00001: # after 5 sec
+                    self.plot_present_route() # global path, current path, obstacle position
+                    self.velocity_graph() # velocity graph
                     timer_cnt = 5
                 print("######### timer_cnt : {} ############".format(timer_cnt))
+
 
             self.serialWrite()
             
@@ -128,21 +131,13 @@ class Serial_IO:
             # print("stop_index : ", self.stop_index_1)
             #######################################################################
 
-            # # plot
-            # if cnt % (0.1*self.rt) == 0: # always per 0.1sec
-            #     self.save_position()
-            #     if self.stop_index-5 < self.ego_index < self.stop_index+5 :#and self.ego_index > 1050
-            #         cnt_stop += 1 # stop index +- 50cm -> cnt_stop+1
+            # plot
+            if plot_cnt % (0.1*self.rt) == 0: # always per 0.1sec
+                self.save_position()
                 
-            # cnt += 1
-            # # if cnt % (50*self.rt) == 0: # activate after 50 second
-            
-            # if cnt_stop > 20 : # if cnt_stop is over 20 (2 seconds in stop_index+-50)
-            #     self.plot_present_route() # global path, current path, obstacle position
-            #     self.velocity_graph() # velocity graph
-            #     break
-            # else:
-            #     pass # plot graph 
+
+                
+
 
             rate.sleep()
 
@@ -333,7 +328,7 @@ class Serial_IO:
         plt.plot(self.global_path_x,self.global_path_y,'k-',label='global_path')
         plt.grid()
         plt.legend()
-        plt.show()
+        plt.savefig()
 
     def plot_present_route(self):
         plt.figure(1)
@@ -342,7 +337,7 @@ class Serial_IO:
         plt.plot(self.objPosition_x,self.objPosition_y,'bo',label='obstacle_position')
         plt.grid()
         plt.legend()
-        plt.show()
+        plt.savefig()
 
     def velocity_graph(self):
         t = 0.5

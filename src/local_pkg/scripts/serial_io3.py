@@ -7,10 +7,13 @@ from local_pkg.msg import Local
 import threading
 import struct
 import rospy
-from math import sqrt, atan2, sin
+from math import sqrt, atan2, sin, atan, cos, sqrt
 from numpy import degrees, radians, hypot, array, argmin
 import json
 import matplotlib.pyplot as plt
+from geometry_msgs.msg import PoseArray
+import numpy as np
+
 
 class Serial_IO:
     def __init__(self):
@@ -25,6 +28,15 @@ class Serial_IO:
         self.curPosition_x = []
         self.curPosition_y = []
         self.velocity = []
+        self.gps_to_Lidar = 1.3
+
+        # Obstacle information
+        self.obj_x = None
+        self.obj_y = None
+        self.objPosition_x = []
+        self.objPosition_y = []
+
+        self.stop_index = None
 
         # Serial Connect
         self.ser = serial.Serial("/dev/erp42", 115200) # Real World
@@ -40,12 +52,19 @@ class Serial_IO:
         # Subscribing Ego information
         rospy.Subscriber("/local_msgs", Local, self.localcallback)
 
-        # Reading Global Path
-        self.read_global_path()
+        # Subscribing Obstacle information
+        rospy.Subscriber("/pcd", PoseArray, self.obstaclecallback)
 
         # Declaration
         self.ego_info = Local()
         self.control_input = Control_Info()
+
+        # Reading Global Path
+        self.read_global_path()
+
+        # self.obstacle_info = PoseArray()
+        self.obstacle_info_x = 0
+        self.obstacle_info_y = 0
 
         # Pure Pursuit coefficient
         self.lookahead_default = 10
@@ -67,27 +86,35 @@ class Serial_IO:
         self.setValue(0,0,0)
 
     def run(self):
-        cnt = 0
+        # cnt = 0
         rate = rospy.Rate(self.rt)
 
         # show global path
-        self.plot_global_path()
-
+        # self.plot_global_path()
+        
         while not rospy.is_shutdown():
-            print("current index is ", self.old_nearest_point_index, "\n")
-            self.setValue(8, self.pure_pursuit(), 0)
-            self.stop_at_target_index(1060) # end point is 1072
+            self.setValue(5, self.pure_pursuit(), 0)
+            self.stop_at_target_index(self.stop_index)
             self.serialWrite()
             
-            if cnt % (0.1*self.rt) == 0: # always per 0.1sec
-                self.save_position()
+
+        
+            ########################### print values ##############################
+            print("current index is ", self.old_nearest_point_index, "\n")
+            print("obstacle x : ", self.obj_x)
+            print("obstacle y : ", self.obj_y)
+            print("stop_index : ", self.stop_index)
+            #######################################################################
+
+            # # plot
+            # if cnt % (0.1*self.rt) == 0: # always per 0.1sec
+            #     self.save_position()
                 
-            cnt += 1
+            # cnt += 1
+            # rate.sleep()
+            # if cnt % (50*self.rt) == 0:
+            #     self.plot_present_route()
             rate.sleep()
-            if cnt % (60*self.rt) == 0:
-                self.plot_present_route()
-
-
 
     def serialRead(self):
         print("Serial_IO: Serial reading thread successfully started")
@@ -146,12 +173,51 @@ class Serial_IO:
         )
         self.ser.write(result)
 
-    def localcallback(self,msg):
+    def localcallback(self, msg):
         self.ego_info.x = msg.x
         self.ego_info.y = msg.y
         self.ego_info.heading = msg.heading
         self.ego_info.speeed = msg.speeed
+        ### for inside test
+        # self.ego_info.x = self.global_path_x[100]
+        # self.ego_info.y = self.global_path_y[100]
+        # self.ego_info.heading = 110
         
+    def obstaclecallback(self,msg):
+        if msg.poses[0].orientation.z == 100:
+            pass
+        else:
+            self.obstacle_info_x = msg.poses[0].orientation.x # relative coordinate obstacle x
+            self.obstacle_info_y = msg.poses[0].orientation.y # relative coordinate obstacle y
+            self.find_obstacle()
+            self.stop_index = self.target_index()
+    
+    def find_obstacle(self):
+        # # for plot : jy
+        # Lidar_x = self.ego_info.x + self.gps_to_Lidar*cos(np.radians(self.ego_info.heading))
+        # Lidar_y = self.ego_info.y + self.gps_to_Lidar*sin(np.radians(self.ego_info.heading))
+        l = sqrt((self.gps_to_Lidar + self.obstacle_info_x)**2 + (self.obstacle_info_y)**2) 
+        self.obj_x = self.ego_info.x + l*cos(np.radians(self.ego_info.heading) - atan(self.obstacle_info_y/(self.obstacle_info_x + self.gps_to_Lidar))) 
+        self.obj_y = self.ego_info.y + l*sin(np.radians(self.ego_info.heading) - atan(self.obstacle_info_y/(self.obstacle_info_x + self.gps_to_Lidar))) 
+    
+    def target_index(self):
+        d = []
+        dx = []
+        dy = []
+        for i in range(len(self.global_path_x)):
+            dx.append(self.obj_x - self.global_path_x[i])
+            dy.append(self.obj_y - self.global_path_y[i])
+        
+        for i in range(len(dx)):
+            d.append(self.distance(dx[i], dy[i]))
+        
+        new_d = array(d)
+        ind = argmin(new_d)
+        self.dx = []
+        self.dy = []
+        
+        return ind
+
     def read_global_path(self):
         with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/Inha_Songdo/right_curve.json", 'r') as json_file:
             json_data = json.load(json_file)
@@ -168,7 +234,7 @@ class Serial_IO:
     def distance(self, x, y):
         return sqrt(x**2+y**2)
 
-    def search_target_index(self):
+    def search_ego_index(self):
         # if self.old_nearest_point_index is None:
         d = []
         self.dx = []
@@ -210,7 +276,7 @@ class Serial_IO:
         return ind, Lf
 
     def pure_pursuit(self):
-        ind,Lf=self.search_target_index()
+        ind,Lf=self.search_ego_index()
         lookahead = min(Lf, 6)
         target_index = ind  #self.ego_info.x'''''' + 49
         
@@ -240,6 +306,7 @@ class Serial_IO:
         plt.figure(1)
         plt.plot(self.global_path_x,self.global_path_y,'k-',label='global_path')
         plt.plot(self.curPosition_x,self.curPosition_y,'ro',label='present_route',ms=2)
+        plt.plot(self.objPosition_x,self.objPosition_y,'bo',label='obstacle_position')
         plt.grid()
         plt.legend()
         plt.show()
@@ -265,24 +332,25 @@ class Serial_IO:
             print("STOPPING.........")
 
     def stop_at_target_index(self, target_index): # not proved
-        # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
-        if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
-            # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
-            # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
-            self.setValue(0, self.control_input.steer, 5)
-            print("Trying to stop(FAR)")
-            print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-        # if self.old_nearest_point_index >= target_index:
-        elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
-            self.setValue(3, self.control_input.steer, 15)
-            print("Trying to stop(CLOSE)")
-            print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-        elif self.old_nearest_point_index >= target_index:
-            self.setValue(0, self.control_input.steer, 50)
-            print("Trying to stop(CLOSE)")
-            print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
-        else:
-            pass
+        if target_index is not None:
+            # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
+            if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
+                # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
+                # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
+                self.setValue(0, self.control_input.steer, 5)
+                print("Trying to stop(FAR)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            # if self.old_nearest_point_index >= target_index:
+            elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
+                self.setValue(3, self.control_input.steer, 15)
+                print("Trying to stop(CLOSE)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            elif self.old_nearest_point_index >= target_index:
+                self.setValue(0, self.control_input.steer, 50)
+                print("Trying to stop(CLOSE)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            else:
+                pass
 
     def setValue(self, speed, steer, brake):
         self.control_input.speed = speed
@@ -292,7 +360,9 @@ class Serial_IO:
     def save_position(self):
         self.curPosition_x.append(self.ego_info.x)
         self.curPosition_y.append(self.ego_info.y)
-        print(1)
+        self.objPosition_x.append(self.obj_x)
+        self.objPosition_y.append(self.obj_y)
+
 
 
 if __name__ == "__main__":

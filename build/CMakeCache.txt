@@ -56,6 +56,12 @@ Boost_LIBRARY_DIR_DEBUG:PATH=/usr/lib/x86_64-linux-gnu
 //Boost library directory RELEASE
 Boost_LIBRARY_DIR_RELEASE:PATH=/usr/lib/x86_64-linux-gnu
 
+//Boost regex library (debug)
+Boost_REGEX_LIBRARY_DEBUG:FILEPATH=/usr/lib/x86_64-linux-gnu/libboost_regex.so
+
+//Boost regex library (release)
+Boost_REGEX_LIBRARY_RELEASE:FILEPATH=/usr/lib/x86_64-linux-gnu/libboost_regex.so
+
 //Boost signals library (debug)
 Boost_SIGNALS_LIBRARY_DEBUG:FILEPATH=/usr/lib/x86_64-linux-gnu/libboost_signals.so
 
@@ -466,7 +472,7 @@ gtest_hide_internal_symbols:BOOL=OFF
 gtest_main_LIB_DEPENDS:STATIC=general;-lpthread;general;gtest;
 
 //Path to a library.
-lib:FILEPATH=/opt/ros/melodic/lib/libtf.so
+lib:FILEPATH=/opt/ros/melodic/lib/libxmlrpcpp.so
 
 //Value Computed by CMake
 local_pkg_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/local_pkg
@@ -568,6 +574,12 @@ rostest_DIR:PATH=/opt/ros/melodic/share/rostest/cmake
 rostime_DIR:PATH=/opt/ros/melodic/share/rostime/cmake
 
 //Value Computed by CMake
+rtcm_msgs_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/ublox_f9p/rtcm_msgs
+
+//Value Computed by CMake
+rtcm_msgs_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/ublox_f9p/rtcm_msgs
+
+//Value Computed by CMake
 sbgECom_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/sbg_ros_driver/external/sbgECom
 
 //Dependencies for target
@@ -632,6 +644,42 @@ track_pkg_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/track_pkg
 
 //Dependencies for the target
 transform_nodelet_LIB_DEPENDS:STATIC=general;velodyne_rawdata;general;data_containers;general;velodyne_input;general;/opt/ros/melodic/lib/libnodeletlib.so;general;/opt/ros/melodic/lib/libbondcpp.so;general;/usr/lib/x86_64-linux-gnu/libuuid.so;general;/opt/ros/melodic/lib/libclass_loader.so;general;/usr/lib/libPocoFoundation.so;general;/usr/lib/x86_64-linux-gnu/libdl.so;general;/opt/ros/melodic/lib/libroslib.so;general;/opt/ros/melodic/lib/librospack.so;general;/usr/lib/x86_64-linux-gnu/libpython2.7.so;general;/usr/lib/x86_64-linux-gnu/libboost_program_options.so;general;/usr/lib/x86_64-linux-gnu/libtinyxml2.so;general;/opt/ros/melodic/lib/libtf.so;general;/opt/ros/melodic/lib/libtf2_ros.so;general;/opt/ros/melodic/lib/libactionlib.so;general;/opt/ros/melodic/lib/libmessage_filters.so;general;/opt/ros/melodic/lib/libtf2.so;general;/opt/ros/melodic/lib/libdynamic_reconfigure_config_init_mutex.so;general;/opt/ros/melodic/lib/libdiagnostic_updater.so;general;/opt/ros/melodic/lib/libroscpp.so;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;general;/opt/ros/melodic/lib/librosconsole.so;general;/opt/ros/melodic/lib/librosconsole_log4cxx.so;general;/opt/ros/melodic/lib/librosconsole_backend_interface.so;general;/usr/lib/x86_64-linux-gnu/liblog4cxx.so;general;/usr/lib/x86_64-linux-gnu/libboost_regex.so;general;/opt/ros/melodic/lib/libxmlrpcpp.so;general;/opt/ros/melodic/lib/libroscpp_serialization.so;general;/opt/ros/melodic/lib/librostime.so;general;/opt/ros/melodic/lib/libcpp_common.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so;general;/usr/lib/x86_64-linux-gnu/libboost_thread.so;general;/usr/lib/x86_64-linux-gnu/libboost_chrono.so;general;/usr/lib/x86_64-linux-gnu/libboost_date_time.so;general;/usr/lib/x86_64-linux-gnu/libboost_atomic.so;general;/usr/lib/x86_64-linux-gnu/libpthread.so;general;/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4;general;yaml-cpp;
+
+//Value Computed by CMake
+ublox_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/ublox_f9p/ublox
+
+//Value Computed by CMake
+ublox_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/ublox_f9p/ublox
+
+//Value Computed by CMake
+ublox_gps_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/ublox_f9p/ublox_gps
+
+//Dependencies for the target
+ublox_gps_LIB_DEPENDS:STATIC=general;boost_system;general;boost_regex;general;boost_thread;general;ublox_msgs;general;/opt/ros/melodic/lib/libdiagnostic_updater.so;general;/opt/ros/melodic/lib/libroscpp.so;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;general;/opt/ros/melodic/lib/librosconsole.so;general;/opt/ros/melodic/lib/librosconsole_log4cxx.so;general;/opt/ros/melodic/lib/librosconsole_backend_interface.so;general;/usr/lib/x86_64-linux-gnu/liblog4cxx.so;general;/usr/lib/x86_64-linux-gnu/libboost_regex.so;general;/opt/ros/melodic/lib/libxmlrpcpp.so;general;/opt/ros/melodic/lib/libroscpp_serialization.so;general;/opt/ros/melodic/lib/librostime.so;general;/opt/ros/melodic/lib/libcpp_common.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so;general;/usr/lib/x86_64-linux-gnu/libboost_thread.so;general;/usr/lib/x86_64-linux-gnu/libboost_chrono.so;general;/usr/lib/x86_64-linux-gnu/libboost_date_time.so;general;/usr/lib/x86_64-linux-gnu/libboost_atomic.so;general;/usr/lib/x86_64-linux-gnu/libpthread.so;general;/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4;
+
+//Value Computed by CMake
+ublox_gps_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/ublox_f9p/ublox_gps
+
+//Value Computed by CMake
+ublox_msgs_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/ublox_f9p/ublox_msgs
+
+//The directory containing a CMake configuration file for ublox_msgs.
+ublox_msgs_DIR:PATH=/home/gigacha/TEAM-GIGACHA/devel/share/ublox_msgs/cmake
+
+//Dependencies for the target
+ublox_msgs_LIB_DEPENDS:STATIC=general;/opt/ros/melodic/lib/libroscpp.so;general;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;general;/opt/ros/melodic/lib/librosconsole.so;general;/opt/ros/melodic/lib/librosconsole_log4cxx.so;general;/opt/ros/melodic/lib/librosconsole_backend_interface.so;general;/usr/lib/x86_64-linux-gnu/liblog4cxx.so;general;/usr/lib/x86_64-linux-gnu/libboost_regex.so;general;/opt/ros/melodic/lib/libxmlrpcpp.so;general;/opt/ros/melodic/lib/libroscpp_serialization.so;general;/opt/ros/melodic/lib/librostime.so;general;/opt/ros/melodic/lib/libcpp_common.so;general;/usr/lib/x86_64-linux-gnu/libboost_system.so;general;/usr/lib/x86_64-linux-gnu/libboost_thread.so;general;/usr/lib/x86_64-linux-gnu/libboost_chrono.so;general;/usr/lib/x86_64-linux-gnu/libboost_date_time.so;general;/usr/lib/x86_64-linux-gnu/libboost_atomic.so;general;/usr/lib/x86_64-linux-gnu/libpthread.so;general;/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4;
+
+//Value Computed by CMake
+ublox_msgs_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/ublox_f9p/ublox_msgs
+
+//Value Computed by CMake
+ublox_serialization_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/ublox_f9p/ublox_serialization
+
+//The directory containing a CMake configuration file for ublox_serialization.
+ublox_serialization_DIR:PATH=/home/gigacha/TEAM-GIGACHA/devel/share/ublox_serialization/cmake
+
+//Value Computed by CMake
+ublox_serialization_SOURCE_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/src/ublox_f9p/ublox_serialization
 
 //Value Computed by CMake
 velodyne_BINARY_DIR:STATIC=/home/gigacha/TEAM-GIGACHA/build/velodyne-master/velodyne
@@ -715,6 +763,10 @@ Boost_INCLUDE_DIR-ADVANCED:INTERNAL=1
 Boost_LIBRARY_DIR_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: Boost_LIBRARY_DIR_RELEASE
 Boost_LIBRARY_DIR_RELEASE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_REGEX_LIBRARY_DEBUG
+Boost_REGEX_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_REGEX_LIBRARY_RELEASE
+Boost_REGEX_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: Boost_SIGNALS_LIBRARY_DEBUG
 Boost_SIGNALS_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: Boost_SIGNALS_LIBRARY_RELEASE
@@ -780,6 +832,8 @@ CMAKE_C_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
 CMAKE_C_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_FLAGS_RELWITHDEBINFO
 CMAKE_C_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
+//Path to cache edit program executable.
+CMAKE_EDIT_COMMAND:INTERNAL=/usr/bin/cmake-gui
 //Executable file format
 CMAKE_EXECUTABLE_FORMAT:INTERNAL=ELF
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS
@@ -832,7 +886,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=24
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=27
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -942,7 +996,7 @@ YAML_CPP_yaml-cpp_LIBDIR:INTERNAL=
 YAML_CPP_yaml-cpp_PREFIX:INTERNAL=
 YAML_CPP_yaml-cpp_VERSION:INTERNAL=
 //Components requested for this build tree.
-_Boost_COMPONENTS_SEARCHED:INTERNAL=atomic;chrono;date_time;signals;system;thread
+_Boost_COMPONENTS_SEARCHED:INTERNAL=atomic;chrono;date_time;regex;signals;system;thread
 //Last used Boost_INCLUDE_DIR value.
 _Boost_INCLUDE_DIR_LAST:INTERNAL=/usr/include
 //Last used Boost_LIBRARY_DIR_DEBUG value.

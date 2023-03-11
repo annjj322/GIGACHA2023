@@ -78,17 +78,6 @@ list_install_components/fast: list_install_components
 
 .PHONY : list_install_components/fast
 
-# Special rule for the target test
-test:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
-	/usr/bin/ctest --force-new-ctest-process $(ARGS)
-.PHONY : test
-
-# Special rule for the target test
-test/fast: test
-
-.PHONY : test/fast
-
 # Special rule for the target install/strip
 install/strip: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
@@ -101,27 +90,16 @@ install/strip/fast: preinstall/fast
 	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip/fast
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
 
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
+# Special rule for the target test
+test/fast: test
 
-.PHONY : rebuild_cache/fast
-
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
-.PHONY : edit_cache
-
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
-
-.PHONY : edit_cache/fast
+.PHONY : test/fast
 
 # Special rule for the target install/local
 install/local: preinstall
@@ -134,6 +112,28 @@ install/local/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
 	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
 .PHONY : install/local/fast
+
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/bin/cmake-gui -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : edit_cache
+
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
+
+.PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -168,111 +168,6 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule
-
-# Convenience name for target.
-velodyne_msgs_generate_messages_py: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule
-
-.PHONY : velodyne_msgs_generate_messages_py
-
-# fast build rule for target.
-velodyne_msgs_generate_messages_py/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/build
-.PHONY : velodyne_msgs_generate_messages_py/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_py.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_py.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_py.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_py: velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_py.dir/rule
-
-.PHONY : std_msgs_generate_messages_py
-
-# fast build rule for target.
-std_msgs_generate_messages_py/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_py.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_py.dir/build
-.PHONY : std_msgs_generate_messages_py/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_nodejs: velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_nodejs.dir/rule
-
-.PHONY : std_msgs_generate_messages_nodejs
-
-# fast build rule for target.
-std_msgs_generate_messages_nodejs/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_nodejs.dir/build
-.PHONY : std_msgs_generate_messages_nodejs/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_lisp: velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_lisp.dir/rule
-
-.PHONY : std_msgs_generate_messages_lisp
-
-# fast build rule for target.
-std_msgs_generate_messages_lisp/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_lisp.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_lisp.dir/build
-.PHONY : std_msgs_generate_messages_lisp/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_cpp: velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir/rule
-
-.PHONY : std_msgs_generate_messages_cpp
-
-# fast build rule for target.
-std_msgs_generate_messages_cpp/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_cpp.dir/build
-.PHONY : std_msgs_generate_messages_cpp/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule
-
-# Convenience name for target.
-velodyne_msgs_generate_messages: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule
-
-.PHONY : velodyne_msgs_generate_messages
-
-# fast build rule for target.
-velodyne_msgs_generate_messages/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/build
-.PHONY : velodyne_msgs_generate_messages/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
-
-# Convenience name for target.
-std_msgs_generate_messages_eus: velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/rule
-
-.PHONY : std_msgs_generate_messages_eus
-
-# fast build rule for target.
-std_msgs_generate_messages_eus/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/std_msgs_generate_messages_eus.dir/build
-.PHONY : std_msgs_generate_messages_eus/fast
-
-# Convenience name for target.
 velodyne-master/velodyne_msgs/CMakeFiles/_velodyne_msgs_generate_messages_check_deps_VelodyneScan.dir/rule:
 	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/_velodyne_msgs_generate_messages_check_deps_VelodyneScan.dir/rule
 .PHONY : velodyne-master/velodyne_msgs/CMakeFiles/_velodyne_msgs_generate_messages_check_deps_VelodyneScan.dir/rule
@@ -303,19 +198,19 @@ velodyne_msgs_generate_messages_eus/fast:
 .PHONY : velodyne_msgs_generate_messages_eus/fast
 
 # Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule
+velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule
+.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule
 
 # Convenience name for target.
-velodyne_msgs_gencpp: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule
+velodyne_msgs_generate_messages: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/rule
 
-.PHONY : velodyne_msgs_gencpp
+.PHONY : velodyne_msgs_generate_messages
 
 # fast build rule for target.
-velodyne_msgs_gencpp/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/build
-.PHONY : velodyne_msgs_gencpp/fast
+velodyne_msgs_generate_messages/fast:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages.dir/build
+.PHONY : velodyne_msgs_generate_messages/fast
 
 # Convenience name for target.
 velodyne-master/velodyne_msgs/CMakeFiles/_velodyne_msgs_generate_messages_check_deps_VelodynePacket.dir/rule:
@@ -363,6 +258,66 @@ velodyne_msgs_generate_messages_nodejs/fast:
 .PHONY : velodyne_msgs_generate_messages_nodejs/fast
 
 # Convenience name for target.
+velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule
+.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule
+
+# Convenience name for target.
+velodyne_msgs_genlisp: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule
+
+.PHONY : velodyne_msgs_genlisp
+
+# fast build rule for target.
+velodyne_msgs_genlisp/fast:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/build
+.PHONY : velodyne_msgs_genlisp/fast
+
+# Convenience name for target.
+velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule
+.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule
+
+# Convenience name for target.
+velodyne_msgs_generate_messages_py: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/rule
+
+.PHONY : velodyne_msgs_generate_messages_py
+
+# fast build rule for target.
+velodyne_msgs_generate_messages_py/fast:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_py.dir/build
+.PHONY : velodyne_msgs_generate_messages_py/fast
+
+# Convenience name for target.
+velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule
+.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule
+
+# Convenience name for target.
+velodyne_msgs_gennodejs: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule
+
+.PHONY : velodyne_msgs_gennodejs
+
+# fast build rule for target.
+velodyne_msgs_gennodejs/fast:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/build
+.PHONY : velodyne_msgs_gennodejs/fast
+
+# Convenience name for target.
+velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule
+.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule
+
+# Convenience name for target.
+velodyne_msgs_genpy: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule
+
+.PHONY : velodyne_msgs_genpy
+
+# fast build rule for target.
+velodyne_msgs_genpy/fast:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/build
+.PHONY : velodyne_msgs_genpy/fast
+
+# Convenience name for target.
 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_cpp.dir/rule:
 	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_cpp.dir/rule
 .PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_generate_messages_cpp.dir/rule
@@ -393,49 +348,19 @@ velodyne_msgs_generate_messages_lisp/fast:
 .PHONY : velodyne_msgs_generate_messages_lisp/fast
 
 # Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule
+velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule
+.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule
 
 # Convenience name for target.
-velodyne_msgs_genlisp: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/rule
+velodyne_msgs_gencpp: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/rule
 
-.PHONY : velodyne_msgs_genlisp
+.PHONY : velodyne_msgs_gencpp
 
 # fast build rule for target.
-velodyne_msgs_genlisp/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genlisp.dir/build
-.PHONY : velodyne_msgs_genlisp/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule
-
-# Convenience name for target.
-velodyne_msgs_genpy: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/rule
-
-.PHONY : velodyne_msgs_genpy
-
-# fast build rule for target.
-velodyne_msgs_genpy/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_genpy.dir/build
-.PHONY : velodyne_msgs_genpy/fast
-
-# Convenience name for target.
-velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f CMakeFiles/Makefile2 velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule
-.PHONY : velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule
-
-# Convenience name for target.
-velodyne_msgs_gennodejs: velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/rule
-
-.PHONY : velodyne_msgs_gennodejs
-
-# fast build rule for target.
-velodyne_msgs_gennodejs/fast:
-	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gennodejs.dir/build
-.PHONY : velodyne_msgs_gennodejs/fast
+velodyne_msgs_gencpp/fast:
+	cd /home/gigacha/TEAM-GIGACHA/build && $(MAKE) -f velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/build.make velodyne-master/velodyne_msgs/CMakeFiles/velodyne_msgs_gencpp.dir/build
+.PHONY : velodyne_msgs_gencpp/fast
 
 # Help Target
 help:
@@ -445,29 +370,24 @@ help:
 	@echo "... depend"
 	@echo "... install"
 	@echo "... list_install_components"
-	@echo "... test"
-	@echo "... velodyne_msgs_generate_messages_py"
-	@echo "... std_msgs_generate_messages_py"
-	@echo "... std_msgs_generate_messages_nodejs"
-	@echo "... std_msgs_generate_messages_lisp"
-	@echo "... std_msgs_generate_messages_cpp"
-	@echo "... velodyne_msgs_generate_messages"
-	@echo "... std_msgs_generate_messages_eus"
 	@echo "... install/strip"
 	@echo "... _velodyne_msgs_generate_messages_check_deps_VelodyneScan"
 	@echo "... velodyne_msgs_generate_messages_eus"
-	@echo "... rebuild_cache"
-	@echo "... velodyne_msgs_gencpp"
+	@echo "... velodyne_msgs_generate_messages"
 	@echo "... _velodyne_msgs_generate_messages_check_deps_VelodynePacket"
 	@echo "... velodyne_msgs_geneus"
 	@echo "... velodyne_msgs_generate_messages_nodejs"
-	@echo "... edit_cache"
+	@echo "... test"
+	@echo "... velodyne_msgs_genlisp"
+	@echo "... velodyne_msgs_generate_messages_py"
+	@echo "... install/local"
+	@echo "... velodyne_msgs_gennodejs"
+	@echo "... velodyne_msgs_genpy"
 	@echo "... velodyne_msgs_generate_messages_cpp"
 	@echo "... velodyne_msgs_generate_messages_lisp"
-	@echo "... velodyne_msgs_genlisp"
-	@echo "... install/local"
-	@echo "... velodyne_msgs_genpy"
-	@echo "... velodyne_msgs_gennodejs"
+	@echo "... edit_cache"
+	@echo "... velodyne_msgs_gencpp"
+	@echo "... rebuild_cache"
 .PHONY : help
 
 

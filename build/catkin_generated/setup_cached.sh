@@ -7,4 +7,10 @@
 # new environment variables
 
 # modified environment variables
+export CMAKE_PREFIX_PATH="/home/gigacha/TEAM-GIGACHA/devel:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH="/home/gigacha/TEAM-GIGACHA/devel/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="/home/gigacha/TEAM-GIGACHA/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/home/gigacha/TEAM-GIGACHA/build'
+export PYTHONPATH="/home/gigacha/TEAM-GIGACHA/devel/lib/python2.7/dist-packages:$PYTHONPATH"
+export ROSLISP_PACKAGE_DIRECTORIES='/home/gigacha/TEAM-GIGACHA/devel/share/common-lisp'
+export ROS_PACKAGE_PATH="/home/gigacha/TEAM-GIGACHA/src:$ROS_PACKAGE_PATH"

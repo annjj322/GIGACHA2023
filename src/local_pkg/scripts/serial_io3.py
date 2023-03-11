@@ -36,10 +36,12 @@ class Serial_IO:
         self.objPosition_x = []
         self.objPosition_y = []
 
-        self.stop_index = None
+        self.stop_index = 497
 
         # Serial Connect
-        self.ser = serial.Serial("/dev/erp42", 115200) # Real World
+        # self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
+        self.ser = serial.Serial("/dev/ttyUSB0", 115200) # Simulation
+
 
         # ROS Publish
         rospy.init_node("Serial_IO", anonymous=False)
@@ -94,7 +96,7 @@ class Serial_IO:
         # self.plot_global_path()
         
         while not rospy.is_shutdown():
-            self.setValue(5, self.pure_pursuit(), 0)
+            self.setValue(15, self.pure_pursuit(), 0)
             self.stop_at_target_index(self.stop_index)
             self.serialWrite()
             
@@ -107,21 +109,21 @@ class Serial_IO:
             print("stop_index : ", self.stop_index)
             #######################################################################
 
-            # plot
-            if cnt % (0.1*self.rt) == 0: # always per 0.1sec
-                self.save_position()
-                if self.stop_index-5 < self.old_nearest_point_index < self.stop_index+5 :#and self.old_nearest_point_index > 1050
-                    cnt_stop += 1 # stop index +- 50cm -> cnt_stop+1
+            # # plot
+            # if cnt % (0.1*self.rt) == 0: # always per 0.1sec
+            #     self.save_position()
+            #     if self.stop_index-5 < self.old_nearest_point_index < self.stop_index+5 :#and self.old_nearest_point_index > 1050
+            #         cnt_stop += 1 # stop index +- 50cm -> cnt_stop+1
                 
-            cnt += 1
-            # if cnt % (50*self.rt) == 0: # activate after 50 second
+            # cnt += 1
+            # # if cnt % (50*self.rt) == 0: # activate after 50 second
             
-            if cnt_stop > 20 : # if cnt_stop is over 20 (2 seconds in stop_index+-50)
-                self.plot_present_route() # global path, current path, obstacle position
-                self.velocity_graph() # velocity graph
-                break
-            else:
-                pass # plot graph 
+            # if cnt_stop > 20 : # if cnt_stop is over 20 (2 seconds in stop_index+-50)
+            #     self.plot_present_route() # global path, current path, obstacle position
+            #     self.velocity_graph() # velocity graph
+            #     break
+            # else:
+            #     pass # plot graph 
 
             rate.sleep()
 
@@ -199,7 +201,8 @@ class Serial_IO:
             self.obstacle_info_x = msg.poses[0].orientation.x # relative coordinate obstacle x
             self.obstacle_info_y = msg.poses[0].orientation.y # relative coordinate obstacle y
             self.find_obstacle()
-            self.stop_index = self.target_index()
+            # self.stop_index = self.target_index()
+            self.stop_index = 497
     
     def find_obstacle(self):
         # # for plot : jy
@@ -228,7 +231,9 @@ class Serial_IO:
         return ind
 
     def read_global_path(self):
-        with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/Inha_Songdo/right_curve.json", 'r') as json_file:
+        # with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/Inha_Songdo/right_curve.json", 'r') as json_file:
+        with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/kcity_simul/semi_map.json", 'r') as json_file:
+        
             json_data = json.load(json_file)
             for _, (x, y, _, _) in enumerate(json_data.values()):
                 self.global_path_x.append(x)
@@ -360,6 +365,26 @@ class Serial_IO:
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
             else:
                 pass
+        else: ### just for simul
+            # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
+            if target_index - 10 >= self.old_nearest_point_index >= target_index - 60:
+                # self.setValue(self.ego_info.speeed, 0, self.ego_info.speeed*self.brake_coefficient)
+                # self.setValue(self.control_input.speed, 0, self.ego_info.speeed*self.brake_coefficient)
+                self.setValue(0, self.control_input.steer, 5)
+                print("Trying to stop(FAR)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            # if self.old_nearest_point_index >= target_index:
+            elif target_index-1 > self.old_nearest_point_index >= target_index - 20:
+                self.setValue(3, self.control_input.steer, 15)
+                print("Trying to stop(CLOSE)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            elif self.old_nearest_point_index >= target_index:
+                self.setValue(0, self.control_input.steer, 50)
+                print("Trying to stop(CLOSE)")
+                print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
+            else:
+                pass
+
 
     def setValue(self, speed, steer, brake):
         self.control_input.speed = speed

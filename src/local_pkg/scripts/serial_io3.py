@@ -86,7 +86,8 @@ class Serial_IO:
         self.setValue(0,0,0)
 
     def run(self):
-        # cnt = 0
+        cnt = 0
+        cnt_stop = 0
         rate = rospy.Rate(self.rt)
 
         # show global path
@@ -106,14 +107,22 @@ class Serial_IO:
             print("stop_index : ", self.stop_index)
             #######################################################################
 
-            # # plot
-            # if cnt % (0.1*self.rt) == 0: # always per 0.1sec
-            #     self.save_position()
+            # plot
+            if cnt % (0.1*self.rt) == 0: # always per 0.1sec
+                self.save_position()
+                if self.stop_index-5 < self.old_nearest_point_index < self.stop_index+5 :#and self.old_nearest_point_index > 1050
+                    cnt_stop += 1 # stop index +- 50cm -> cnt_stop+1
                 
-            # cnt += 1
-            # rate.sleep()
-            # if cnt % (50*self.rt) == 0:
-            #     self.plot_present_route()
+            cnt += 1
+            # if cnt % (50*self.rt) == 0: # activate after 50 second
+            
+            if cnt_stop > 20 : # if cnt_stop is over 20 (2 seconds in stop_index+-50)
+                self.plot_present_route() # global path, current path, obstacle position
+                self.velocity_graph() # velocity graph
+                break
+            else:
+                pass # plot graph 
+
             rate.sleep()
 
     def serialRead(self):
@@ -326,7 +335,7 @@ class Serial_IO:
         plt.ylabel('velocity(m/s)')
         plt.show()
 
-    def stop_if_end(self): # not proved
+    def stop_if_end(self): # not proved -> if it work, plot function activate here
         if self.old_nearest_point_index == len(self.global_path_x):
             self.setValue(0, 0, 45)
             print("STOPPING.........")

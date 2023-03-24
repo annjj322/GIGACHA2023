@@ -22,6 +22,14 @@ class Serial_IO:
         self.k = 0.15
         self.WB = 1.04 # wheel base
 
+        # calculate Error // just for curve path
+        self.local4error_pre_x = None
+        self.local4error_pre_y = None
+        self.local4error_x = None
+        self.local4error_y = None
+        self.error_dist = 0 # curve index : 3000 ~ 3500
+        self.ego_index_pre = None
+
         # Global Path
         self.global_path_x = []
         self.global_path_y = []
@@ -30,6 +38,7 @@ class Serial_IO:
         self.curPosition_x = []
         self.curPosition_y = []
         self.velocity = []
+        self.ego_speed = []
         self.gps_to_Lidar = 1.3
 
         # Obstacle information
@@ -38,8 +47,8 @@ class Serial_IO:
         self.objPosition_x = []
         self.objPosition_y = []
 
-        # self.stop_index = [800, 1200, 2500, 4450]
-        self.stop_index = [None, None, None, None]
+        self.stop_index = [800, 1200, 2500, 4450]
+        # self.stop_index = [None, None, None, None]
        
         # Serial Connect
         # self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
@@ -73,7 +82,7 @@ class Serial_IO:
 
         # Pure Pursuit coefficient
         # self.lookahead_default = 10
-        self.lookahead_default = 4
+        self.lookahead_default = 1
         self.ego_index = None
 
         # Stop coefficient
@@ -96,17 +105,21 @@ class Serial_IO:
         timer_cnt = 5
         rate = rospy.Rate(self.rt)
         i = 0
+        self.ego_index_pre = self.ego_index
 
 
 
         while not rospy.is_shutdown():
+        
+            print('ego info x : ', self.ego_info.x)
+            print('ego info y : ', self.ego_info.y)
     
             self.obj_x = self.global_path_x[self.stop_index[i]]
             self.obj_y=  self.global_path_y[self.stop_index[i]]
 
             plot_cnt += 1
 
-            self.setValue(15, self.pure_pursuit(), 0)
+            self.setValue(10, self.pure_pursuit(), 0)
 
             self.stop_at_target_index(self.stop_index[i])
             if self.stop_index[i]+2 >= self.ego_index >= self.stop_index[i]-2: #and stop_bool == False:
@@ -124,6 +137,24 @@ class Serial_IO:
                     # self.plot_velocity_graph("Velocity_graph_{}".format(i)) # velocity graph
                     
                 print("######### timer_cnt : {} ############".format(timer_cnt))
+            self.ego_speed.append
+            ####### jj just for Demo #######
+            if 3000 <= self.ego_index < 3500 and self.ego_index_pre != self.ego_index:
+                a = self.global_path_x[self.ego_index]
+                b = self.global_path_y[self.ego_index]
+                self.local4error_x = self.ego_info.x
+                self.local4error_y = self.ego_info.y
+                if self.local4error_x != self.local4error_pre_x and self.local4error_pre_x != None:
+                    _tmp = self.err_dist(int(self.local4error_pre_x),int(self.local4error_pre_y),int(self.local4error_x),int(self.local4error_y),int(a),int(b))
+                    self.error_dist += _tmp
+                    print("error distance : ",self.error_dist)
+                    
+            self.local4error_pre_x, self.local4error_pre_y = self.local4error_x, self.local4error_y
+            self.ego_index_pre = self.ego_index
+            if self.ego_index > 3500:
+                final_error = self.error_dist/len(range(3000,3500))
+                print("Final Error is : ", final_error)
+            ################################
 
 
             
@@ -409,6 +440,26 @@ class Serial_IO:
                 print("(Speed, Steer, Brake): {}, {}, {}".format(self.control_input.speed, self.control_input.steer, self.control_input.brake))
             else:
                 pass
+      
+    ############################ jy ###############################
+    # def stop_smooth(self, target_index):
+    #     if target_index is not None:
+    #         if target_index - 150
+
+
+    # def smooth_brake(self, speed):
+    #     t = 3
+    #     h = 0.05
+    #     a = speed/h
+    #     ref_V = self.serial_msg.speed - h*a
+    #     if self.serial_msg.speed > ref_V:
+    #         self.setValue(0, self.control_input.steer, 30)
+    #     elif self.serial_msg.speed < ref_V:
+    #         self.setValue(10, self.control_input.steer, 0)
+    #     else:
+    #         pass
+        
+    ###############################################################
     # def stop_at_target_index(self, target_index): # not proved
     #     if target_index is not None:
     #         # if self.old_nearest_point_index >= target_index - self.stop_index_coefficient:
@@ -440,6 +491,20 @@ class Serial_IO:
         self.curPosition_y.append(self.ego_info.y)
         self.objPosition_x.append(self.obj_x)
         self.objPosition_y.append(self.obj_y)
+
+    def err_dist(self,x1,y1,x2,y2,a,b):
+        # area = abs((x1-a) * (y2-b)- (y1-b) * (x2-a))
+        # AB = ((x1-x2)**2 + (y1-y2)**2) ** 0.5
+        # distance = area/AB
+        # return distance  # two ego index -> x,y // global path -> a,b
+        dx1 = abs(a-x1)
+        dy1 = abs(b-y1)
+        dx2 = abs(a-x2)
+        dy2 = abs(b-y2)
+        distance1 = self.distance(dx1,dy1)
+        distance2 = self.distance(dx2,dy2)
+        error = (distance1+distance2)/2
+        return error
 
 
 

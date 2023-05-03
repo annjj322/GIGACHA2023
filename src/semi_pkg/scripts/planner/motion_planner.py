@@ -36,7 +36,8 @@ class MotionPlanner(threading.Thread):
                     self.motion.select_trajectory()
 
                 elif self.shared.plan.behavior_decision == "driving":
-                    # self.motion.lane_weight = [10000, 1000, 0, 10000]
+                    self.motion.lane_weight = [10000, 10000, 10000, 0, 10000, 10000, 10000]
+                    self.motion.static_n_dynamic_obstacle_aviodance()
                     self.motion.select_trajectory()
 
                 elif self.shared.plan.behavior_decision == "emergency_avoidance":

@@ -16,7 +16,7 @@ class Motion():
 
         self.lane_weight = [1000, 1000, 1000, 0, 1000, 1000, 1000]
         self.lane_offset = [5.5, 3.5, 1.1, 0, -1.1, -3.5, -5.5]
-        self.isObstacle = [1000, 1000, 1000, 1000]
+        self.isObstacle = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
         self.min_val = 0
         self.check = 0
 
@@ -24,9 +24,9 @@ class Motion():
         self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
 
     def weight_function_AEB(self):  #!! AEB's weight function !!
-        self.isObstacle = [1000, 1000, 1000, 1000]
+        self.isObstacle = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
 
-        for i in range(len(self.isObstacle)): # 0,1,2
+        for i in range(len(self.isObstacle)): 
             path_check = True
             if path_check == True:
                 self.shared.perception.lidar_lock.acquire()
@@ -63,6 +63,44 @@ class Motion():
         #     else:
         #         self.lane_weight = [1000, 1000, 0, 1000]
         
+    
+    def static_n_dynamic_obstacle_aviodance(self):
+        '''
+        lists = []
+        for marker in markerarray.markers:
+            center_x = marker.pose.position.x # LiDAR 기준 x 위치
+            center_y = marker.pose.postiion.y
+            length = marker.scale.x
+            width = marker.scale.y
+            height = marker.scale.z
+            bbox = [center_x, center_y,,,]
+            lists.append(bbox)       
+        '''
+        # subscribe
+        # kf_jj
+        # path weight 생성
+
+
+
+
+
+
+
+
+
+
+
+    def kalman_Filter_jaejun(self):
+        pass
+        '''
+        장애물 예측
+        ''' 
+
+
+
+
+
+
 
 
     def weight_function_obstacle_avoidance(self):
@@ -110,6 +148,7 @@ class Motion():
         elif (self.isObstacle[3] == 1000 and self.isObstacle[2] == 1000 and self.isObstacle[1] == 1000):
             # print("+++++++++++++\nNo obstacle in lane\n++++++++++++")
             self.lane_weight = [1000,1000,0,1000]
+
 
     def path_maker(self):
         lattice = []

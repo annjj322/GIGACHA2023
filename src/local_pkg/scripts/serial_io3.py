@@ -45,8 +45,8 @@ class Serial_IO:
         self.stop_index = len(self.global_path_x)
        
         # Serial Connect
-        self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
-        # self.ser = serial.Serial("/dev/ttyUSB0", 115200) # Simulation
+        # self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
+        self.ser = serial.Serial("/dev/ttyUSB0", 115200) # Simulation
 
 
         # ROS Publish
@@ -105,28 +105,28 @@ class Serial_IO:
 
             plot_cnt += 1
 
-            self.setValue(6, self.pure_pursuit(), 0)
+            self.setValue(20, self.pure_pursuit(), 0)
             print("steer : ", self.control_input.steer)
 
-            self.stop_at_target_index(self.stop_index)
+            # self.stop_at_target_index(self.stop_index)
                     
             
             
 
             
 
-            if self.timer_cnt < 4.95000001:
-                self.setValue(0,0,100)
+            # if self.timer_cnt < 4.95000001:
+            #     self.setValue(0,0,100)
                 
-                if abs(self.timer_cnt) < 0.00001:
-                    self.stop_index = None
+            #     if abs(self.timer_cnt) < 0.00001:
+            #         self.stop_index = None
                 
-                    self.timer_cnt = 5
-                    i+=1
-                    self.plot_graph(i) # Everything
-                    # self.plot_velocity_graph("Velocity_graph_{}".format(i)) # velocity graph
+            #         self.timer_cnt = 5
+            #         i+=1
+            #         self.plot_graph(i) # Everything
+            #         # self.plot_velocity_graph("Velocity_graph_{}".format(i)) # velocity graph
                     
-                print("######### self.timer_cnt : {} ############".format(self.timer_cnt))
+            #     print("######### self.timer_cnt : {} ############".format(self.timer_cnt))
 
 
             
@@ -150,8 +150,8 @@ class Serial_IO:
             #######################################################################
 
             # plot
-            if plot_cnt % (0.1*self.rt) == 0: # always per 0.1sec
-                self.save_position()
+            # if plot_cnt % (0.1*self.rt) == 0: # always per 0.1sec
+            #     self.save_position()
 
                 
             # cnt += 1
@@ -274,7 +274,7 @@ class Serial_IO:
         return ind
 
     def read_global_path(self):
-        with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/Inha_Songdo/right_curve.json", 'r') as json_file:
+        with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/kcity_simul/semi_map.json", 'r') as json_file:
         # with open(f"/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/maps/kcity_simul/semi_map.json", 'r') as json_file:
         
             json_data = json.load(json_file)
@@ -350,7 +350,7 @@ class Serial_IO:
             tmp_steer *= 0.8
 
         steer = max(min(tmp_steer, 27.0), -27.0) 
-        return 0
+        return steer
 
     def plot_global_path(self, title):
         plt.figure(0)

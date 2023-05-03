@@ -21,15 +21,15 @@ class MissionPlanner(threading.Thread):
                 elif self.shared.perception.signname == "turn_left_traffic_light":
                     self.plan.state = "left_sign_detected"
 
-                elif self.perception.signname == "AEB":
+                elif self.shared.perception.signname == "AEB":
                     self.plan.state = "emergency_stop"
                 
-                elif self.perception.signname == "parking":
+                elif self.shared.perception.signname == "parking":
                     self.plan.state = "parking"
                     
-                elif self.perception.signname == "driving":
+                elif self.shared.perception.signname == "driving":
                     self.plan.state = "go"
-                #####
+
 
             except IndexError:
                 print("++++++++mission_planner+++++++++")

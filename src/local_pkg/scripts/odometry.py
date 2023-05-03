@@ -2,11 +2,10 @@ import rospy
 from std_msgs.msg import Int64
 from local_pkg.msg import Serial_Info
 
-
 class DR():
     def __init__(self):
         rospy.Subscriber('/Displacement_right', Int64, self.encoderCallback)
-        rospy.Subscriber('/serial', Serial_Info, self.serialTopulse)
+        rospy.Subscriber('/serial', Serial_Info, self.serialTopulse_by_control_planning)
 
         self.right = 0  # pulse from sensor
         self.left = 0  # pulse from serial
@@ -93,6 +92,11 @@ class DR():
 
     #     # self.dis = (self.dis_left + self.dis_right) / 2
     #     self.dis = (self.dis_left + self.dis_right) / (2*58.82)
+
+    def serialTopulse_by_control_planning(self, data):
+        # wrote on 3/31 by control/planning
+        self.gear = data.gear
+        self.speed = data.speed
 
     def serialTopulse(self, data):
         self.gear = data.gear

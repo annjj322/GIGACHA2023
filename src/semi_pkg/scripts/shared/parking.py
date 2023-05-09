@@ -6,6 +6,7 @@ class Parking():
         self.mindex = 0
         self.forward_path = Path()
         self.backward_path = Path()
+        self.diagonal_path = Path()
         self.direction = 0
         self.index = 0
         self.stop_index = 0

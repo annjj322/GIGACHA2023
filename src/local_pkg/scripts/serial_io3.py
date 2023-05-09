@@ -106,7 +106,7 @@ class Serial_IO:
             plot_cnt += 1
 
             self.setValue(20, self.pure_pursuit(), 0)
-            print("steer : ", self.control_input.steer)
+            # print("steer : ", self.control_input.steer)
 
             # self.stop_at_target_index(self.stop_index)
                     
@@ -146,6 +146,7 @@ class Serial_IO:
         
             ########################### print values ##############################
             print("current index is ", self.ego_index, "\n")
+            print('current x, y is ', self.ego_info.x, self.ego_info.y)
             print("stop_index : ", self.stop_index)
             #######################################################################
 

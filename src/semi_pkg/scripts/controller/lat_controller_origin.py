@@ -20,7 +20,8 @@ class LatController():
         while True:
             try:
                 if self.parking.on == "on":
-                    self.parking_run()
+                    # self.parking_run()
+                    self.parking_run_LJY()
                 elif self.parking.on == "forced":
                     self.parking_run2()
                 elif self.parking.on == "U_turn":
@@ -41,11 +42,11 @@ class LatController():
             self.path = self.parking.backward_path
             lookahead = 5
         # if not self.parking.inflection_on:
-        target_index = lookahead + self.parking.index
+        # target_index = lookahead + len(self.parking.backward_path.x)
         # else:
         #     target_index = len(self.parking.backward_path.x) - 1
 
-        target_x, target_y = self.path.x[target_index], self.path.y[target_index]
+        target_x, target_y = self.path.x[-1], self.path.y[-1]
         tmp = degrees(atan2(target_y - self.ego.y, target_x - self.ego.x)) % 360
 
         heading = self.ego.heading
@@ -102,4 +103,38 @@ class LatController():
             tmp_steer *= 0.8
 
         self.steer = max(min(tmp_steer, 27.0), -27.0)
+        return self.steer
+
+    def parking_run_LJY(self):
+        # if self.parking.direction == 0:
+        #     self.global_path = self.parking.forward_path
+        #     lookahead = 5
+        # else:
+        #     self.global_path = self.parking.backward_path
+        lookahead = 2
+
+        target_x, target_y = self.global_path.x[self.ego.index + lookahead], self.global_path.y[self.ego.index + lookahead]
+        tmp = degrees(atan2(target_y - self.ego.y, target_x - self.ego.x)) % 360
+
+        heading = self.ego.heading
+        ###### Back Driving ######
+        if self.ego.target_gear == 2:
+            heading += 180
+            heading %= 360
+        ##########################
+
+        alpha = heading - tmp
+        angle = atan2(2.0 * self.WB *
+                      sin(radians(alpha)) / lookahead, 1.0)
+
+        # ###### Back Driving ######
+        # if self.ego.target_gear == 2:
+        #     angle = -1.5*angle
+        # ##########################
+
+        if degrees(angle) < 3.5 and degrees(angle) > -3.5:
+            angle = 0
+
+        self.steer = max(min(degrees(angle), 27.0), -27.0)
+
         return self.steer

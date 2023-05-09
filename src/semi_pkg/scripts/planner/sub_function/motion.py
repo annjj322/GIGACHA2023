@@ -19,7 +19,8 @@ class Motion():
 
     def select_trajectory(self):
         self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
-        print("lane : ", self.lane_weight.index(min(self.lane_weight)))
+        self.shared.selected_lane = 8
+        print("lane : ", self.shared.selected_lane)
 
     def static_obstacle_aviodance(self):
         
@@ -75,6 +76,21 @@ class Motion():
         return path_weight
 
     def all_obstacle_aviodance(self):
+        """
+        This function calculates the optimal path for a vehicle to navigate through a set of static and dynamic obstacles.
+
+        Case 1 -> started from the right, slow object
+        Case 2 -> started from the left, fast object
+        Case 3 -> started from the left, slow object
+        Case 4 -> started from the right, fast object
+
+        Args:
+        - obstacle_list: A list containing the position and size of each obstacle. Each list should have x, y, lane, closest index
+        - lane_weight: A float that represents the weight of the lane. It determines the cost of traveling through each lane. The default value is 8 (index).
+        
+        Returns:
+        - A list representing the weights for the vehicle to navigate through the obstacles.
+        """
         path_weight = [1000, 14, 12, 10, 8, 6, 4, 2, 0, 2, 4, 6, 1000]
 
         static_obs_1 = [66.9928, 50.4973, 10, 649] # [x, y, lane, closest index]
@@ -102,14 +118,15 @@ class Motion():
                 path_weight[obs[2]+2] += obs_value[4]
             
 
-        obs_1_start = [97.01, 104.32, 10, 1266] # x, y, lane, index
-        obs_1_middle_1 = [93.91, 103.9, 8, 1248]
-        obs_1_middle_2 = [92.57, 103.58, 6, 1239]
-        obs_1_end = [89.18, 103.03, 2, 1219]
-        obs_1_list = [obs_1_start, obs_1_middle_1, obs_1_middle_2, obs_1_end] # lane별로 늘려서
+        # obs_1_start = [97.01, 104.32, 10, 1266] # x, y, lane, index
+        # obs_1_middle_1 = [93.91, 103.9, 8, 1248]
+        obs_1_middle_2 = [92.57, 103.58, 9, 1239]
+        obs_1_end = [89.18, 103.03, 7, 1219]
+        # obs_1_list = [obs_1_start, obs_1_middle_1, obs_1_middle_2, obs_1_end] # lane별로 늘려서
+        obs_1_list = [obs_1_middle_2, obs_1_end] # lane별로 늘려서
         gain = 0.3
         for obs in obs_1_list:
-            if obs_1_start[3]+10 < self.shared.ego.index:
+            if obs_1_end[3]+10 < self.shared.ego.index:
                 break
             distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
             if distance > 15:
@@ -122,13 +139,93 @@ class Motion():
                 path_weight[obs[2]] += obs_value[1]
                 path_weight[obs[2]+1] += obs_value[2] 
             
+            gain += 0.2
+
+        # obs_2_start = [104.55, 130.04, 4, 1530] # x, y, lane, index
+        # obs_2_middle_1 = [106.33, 129.30, 6, 1532]
+        obs_2_middle_2 = [107.22, 128.74, 8, 1531]
+        obs_2_end = [108.84, 127.63, 10, 1529]
+        # obs_2_list = [obs_2_start, obs_2_middle_1, obs_2_middle_2, obs_2_end] # lane별로 늘려서
+        obs_2_list = [obs_2_middle_2, obs_2_end] # lane별로 늘려서
+        gain = 0.3
+        for obs in obs_2_list:
+            if obs_2_end[3]+10 < self.shared.ego.index:
+                break
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            if distance > 15:
+                continue
+            print("distance : ", distance)
+            term = distance**1.3
+            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
+
+            # obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
+            if 0<obs[2]<len(path_weight):
+                # print(obs_value)
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2] 
+
             gain += 0.1
 
-        print("Weight : ", list(np.round(path_weight, 1)))
+        # obs_3_start = [104.55, 130.04, 4, 1530] # x, y, lane, index
+        # obs_3_middle_1 = [106.33, 129.30, 6, 1532]
+        obs_3_middle_2 = [90.06, 173.13, 7, 2175]
+        obs_3_end = [91.98, 173.69, 9, 2162]
+        # obs_3_list = [obs_3_start, obs_3_middle_1, obs_3_middle_2, obs_3_end] # lane별로 늘려서
+        obs_3_list = [obs_3_middle_2, obs_3_end] # lane별로 늘려서
+        gain = 0.3
+        for obs in obs_3_list:
+            if obs_3_end[3]+10 < self.shared.ego.index:
+                break
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            if distance > 15:
+                continue
+            print("distance : ", distance)
+            term = distance**1.3
+            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
 
-        # print("asdfasdfasdf : ", self.shared.ego.index)
-        # print(self.shared.ego.x)
-        # print(self.shared.ego.y)
+            # obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
+            if 0<obs[2]<len(path_weight):
+                # print(obs_value)
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2] 
+
+            gain += 0.1
+
+        # obs_3_start = [104.55, 130.04, 4, 1530] # x, y, lane, index
+        # obs_3_middle_1 = [106.33, 129.30, 6, 1532]
+        obs_4_middle_2 = [77.20, 180.35, 8, 2323]
+        obs_4_end = [79.41, 179.05, 6, 2301]
+        # obs_4_list = [obs_4_start, obs_4_middle_1, obs_4_middle_2, obs_4_end] # lane별로 늘려서
+        obs_4_list = [obs_4_middle_2, obs_4_end] # lane별로 늘려서
+        gain = 0.3
+        for obs in obs_4_list:
+            if obs_4_end[3]+10 < self.shared.ego.index:
+                break
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            if distance > 15:
+                continue
+            print("distance : ", distance)
+            term = distance**1.3
+            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
+
+            # obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
+            if 0<obs[2]<len(path_weight):
+                # print(obs_value)
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2] 
+
+            gain += 0.1
+
+
+        print("Weight : ", list(np.round(path_weight, 1)))
+        
+
+        print("asdfasdfasdf : ", self.shared.ego.index)
+        print(self.shared.ego.x)
+        print(self.shared.ego.y)
         return path_weight
 
     def path_maker(self):

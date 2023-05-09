@@ -84,11 +84,11 @@ class Parking_Motion_LJY():
         
         return ind
 
-    def making_parking_path(self):
-        ind = self.nearest_index(self.contact_point[0], self.contact_point[1])
-
-        parking_path_x = [self.global_path.x[ind - 31], self.global_path.x[ind - 30], self.middlepoint[0], self.destination[0]]
-        parking_path_y = [self.global_path.y[ind - 31], self.global_path.y[ind - 30], self.middlepoint[1], self.destination[1]]
+    def making_forward_path(self):
+        ind = self.ego.index
+        
+        parking_path_x = [self.global_path.x[ind], self.global_path.x[ind+1], self.middlepoint[0], self.destination[0]]
+        parking_path_y = [self.global_path.y[ind], self.global_path.y[ind+1], self.middlepoint[1], self.destination[1]]
 
         # parking_space_x = [64.6268, 69.2112, 70.2465, 65.5141, 64.6268]
         # parking_space_y = [42.5435, 44.3932, 41.9886, 40.1389, 42.5435]
@@ -102,16 +102,21 @@ class Parking_Motion_LJY():
     def making_backward_path(self):
         ind1 = self.ego.index
         ind2 = self.nearest_index(self.contact_point[0], self.contact_point[1])
-        
-        # self.heading = rad2deg(atan2(
-        #     (self.global_path.y[self.parking.mindex]-self.global_path.y[self.parking.mindex - 1]), (self.global_path.x[self.parking.mindex]-self.global_path.x[self.parking.mindex - 1])))%360
 
-        backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2]]
-        backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2]]
+        # backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2 - 50]]
+        # backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2 - 50]]
+        
+        backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2 - 100]]
+        backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2 - 100]]
         
         cx, cy, cyaw, ck, s = calc_spline_course(backward_path_x, backward_path_y, ds = 0.1)
+        
+        print("ind1: ",ind1)
+        print("ind2: ",ind2)
 
-        self.global_path.x, self.global_path.y = cx, cy
+        self.global_path.x, self.global_path.y = cx, cy  
+        # self.heading = rad2deg(atan2(
+        #     (self.global_path.y[ind1]-self.global_path.y[ind2]), (self.global_path.x[ind1]-self.global_path.x[ind2])))%360
 
 ##########################################################
 
@@ -285,5 +290,4 @@ class Parking_Motion_LJY():
             path = self.parking.forward_path
 
         self.parking.index = self.park_index_finder(path)
-        self.parking.stop_index = len(path.x)
-        # print(self.parking.stop_index)
+        self.parking.stop_index = len(self.global_path.x)

@@ -54,6 +54,10 @@ class MotionPlanner(threading.Thread):
                     # self.park_motion.make_parking_tra()
                     self.park_motion.making_backward_path()
 
+                elif self.shared.plan.behavior_decision == "forward_trajectory_Create":
+                    # self.park_motion.make_parking_tra()
+                    self.park_motion.making_forward_path()
+
                 elif self.shared.plan.behavior_decision == "parkingForwardOn":
                     self.park_motion.parking_drive(0)
 

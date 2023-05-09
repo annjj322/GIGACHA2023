@@ -1,7 +1,8 @@
 import threading
 import rospy
 from time import sleep
-from .lat_controller import LatController
+from .lat_controller_origin import LatController # 임시로 수정. 만약 lattice planning이 하고 싶으면 주석 해제할 것
+# from .lat_controller import LatController
 # from .lon_controller import LonController
 from local_pkg.msg import Control_Info
 
@@ -23,7 +24,7 @@ class Controller(threading.Thread):
     def run(self):
         while True:
             try:
-                self.ego.input_steer = self.lat_controller.run()
+                self.ego.input_steer = self.lat_controller.run() 
                 # self.ego.input_speed = self.lon_controller.run()
                 if self.plan.behavior_decision == "driving":
                     self.ego.input_speed = self.ego.map_speed[self.ego.index]
@@ -41,7 +42,7 @@ class Controller(threading.Thread):
                 serial.steer = self.ego.input_steer
                 serial.brake = self.ego.input_brake
 
-                self.serial_pub.publish(serial) ## jm : 어디로 쏘나요?
+                self.serial_pub.publish(serial) 
 
             except IndexError:
                 print("+++++++controller++++++")

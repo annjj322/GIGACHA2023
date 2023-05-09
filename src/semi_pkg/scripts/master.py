@@ -43,15 +43,14 @@ class Master(threading.Thread):
 
         while True:
             print("---------------------")
+            # print('x : {0:.2f}, y : {1:.2f}, index : {2}, \nheading : {3:.2f}'\
+            #   .format(self.shared.ego.x, self.shared.ego.y, self.shared.ego.index, self.shared.ego.heading))
+            # print('Mission_State : {}'.format(self.shared.plan.state))
+            #print('Sign_name : {}'.format(self.shared.perception.signname))
+            #print('Behavior_Decision : {}'.format(self.shared.plan.behavior_decision))
 
-            print('x : {0:.2f}, y : {1:.2f}, index : {2}, \nheading : {3:.2f}'\
-               .format(self.shared.ego.x, self.shared.ego.y, self.shared.ego.index, self.shared.ego.heading))
-            print('Mission_State : {}'.format(self.shared.plan.state))
-            print('Sign_name : {}'.format(self.shared.perception.signname))
-            print('Behavior_Decision : {}'.format(self.shared.plan.behavior_decision))
-
-            print('Motion_Selected lane : {}'.format(self.shared.selected_lane + 1))
-            print('Speed : {}, Steer : {:.2f}'.format(self.shared.ego.input_speed, self.shared.ego.input_steer))
+            #print('Motion_Selected lane : {}'.format(self.shared.selected_lane + 1))
+            #print('Speed : {}, Steer : {:.2f}'.format(self.shared.ego.input_speed, self.shared.ego.input_steer))
 
             self.checker_all()
 
@@ -81,7 +80,8 @@ if __name__ == "__main__":
     argparser.add_argument(
         '--map',
         
-        default='kcity_simul/semi_map',
+        default='kcity_simul/semi_map_driving', # lattice planning
+        # default='kcity_simul/semi_map', # parking
         help='kcity/map1, songdo/map2, yonghyeon/Yonghyeon, kcity_simul/left_lane, kcity_simul/right_lane, kcity_simul/final, inha_parking/gpp, kcity_simul/semi_map'
     )
 

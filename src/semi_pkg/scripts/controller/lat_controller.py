@@ -16,7 +16,10 @@ class LatController():
         self.k = 0.15 #1.5
         # self.lookahead_default = 4 #look-ahead default
 
+        self.path = self.lattice_path[self.shared.selected_lane]
+
         # cubic spline
+        # self.cx, self.cy, self.cyaw, self.ck, self.s = MPC.cs.calc_spline_course(self.path.x, self.path.y, ds = MPC.P.d_dist)
         self.cx, self.cy, self.cyaw, self.ck, self.s = MPC.cs.calc_spline_course(self.global_path.x, self.global_path.y, ds = MPC.P.d_dist)
 
         # MPC initial
@@ -131,6 +134,11 @@ class LatController():
 
         ego_ind = self.nearest_index(self.node)
         
+        print("path.x: ",len(self.path.x))
+        print("globalpath.x: ",len(self.global_path.x))
+        print("path.y: ",len(self.path.y))
+        print("globalpath.y: ",len(self.global_path.y))
+
         self.x.append(self.node.x)
         self.y.append(self.node.y)
         self.yaw.append(self.node.yaw)
@@ -141,10 +149,10 @@ class LatController():
         z_bar = MPC.mpc_predict_next_state(z_ref, self.node.x, self.node.y, self.node.yaw, self.node.v, self.v[-1], steer_list) # 미래 예측된 state # 위에서 뽑은 걸 기반으로 뽑아낸 예측 state
         selected_index = MPC.mpc_cost_function_LJY(z_ref, z_bar, steer_list) # z_ref와 z_bar을 기반으로 해서 다음 state index 정하기
         self.steer = steer_list[selected_index]
-        print(ego_ind)
-        print(selected_index)
-        print(self.steer)
-        print(self.parking.on)
+        # print(ego_ind)
+        # print(selected_index)
+        # print(self.steer)
+        # print(self.parking.on)
         return self.steer
 
     def nearest_index(self, node):

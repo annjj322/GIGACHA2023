@@ -14,141 +14,122 @@ class Motion():
         self.cut_path = self.shared.cut_path # from global path (find_local_path)
         self.lattice_path = self.shared.lattice_path # from LPP []
 
-        self.lane_weight = [1000, 1000, 1000, 0, 1000, 1000, 1000]
-        self.lane_offset = [5.5, 3.5, 1.1, 0, -1.1, -3.5, -5.5]
-        self.isObstacle = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
-        self.min_val = 0
-        self.check = 0
+        self.lane_offset = [5.4, 4.35, 3.3, 2.75, 2.2, 1.7, 1.2, 0.7, 0.2, -0.25, -0.7, -1.45, -2.2] # for kcity map
+        self.lane_weight = None
 
     def select_trajectory(self):
         self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
+        print("lane : ", self.lane_weight.index(min(self.lane_weight)))
 
-    def weight_function_AEB(self):  #!! AEB's weight function !!
-        self.isObstacle = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
-
-        for i in range(len(self.isObstacle)): 
-            path_check = True
-            if path_check == True:
-                self.shared.perception.lidar_lock.acquire()
-                for j in range(len(self.lattice_path[i].x)): # paths' index
-                    if path_check == False:
-                        break
-                    for k in range(len(self.shared.perception.objx)): # of obj
-                        ob_point_distance = sqrt((self.lattice_path[i].x[j] - self.shared.perception.objx[k])**2 + (self.lattice_path[i].y[j] - self.shared.perception.objy[k])**2)
-                        if ob_point_distance < (self.shared.perception.objw[k]/2+1): #and self.Obstacle_in_section == 0:
-                            self.isObstacle[i] = j # not 1000
-                            path_check = False
-                            break
-                        else:
-                            self.isObstacle[i] = 1000
-                self.shared.perception.lidar_lock.release()
-
-        if self.isObstacle[2] != 1000:
-            self.shared.plan.obstac = True
-            self.lane_weight = [1000, 1000, 0, 1000]
-        else:
-            self.shared.plan.obstac = False
-
-            # if(self.isObstacle[2] < self.isObstacle[0]):
-            #     print("+++++++++++++\nobstacle in lane 1\n++++++++++++")
-            #     self.lane_weight = [0, 1000, 1000, 1000]
-        # elif (self.shared.selected_lane == 0 and self.isObstacle[0] != 1000):
-        #     if(self.isObstacle[0] > self.isObstacle[2]):
-        #         print("+++++++++++++\nobstacle in lane 2\n++++++++++++")
-        #         self.lane_weight = [1000, 1000, 0, 1000]
-        # elif (self.shared.selected_lane == 0 and self.isObstacle[0] == 1000):
-        #     if(self.isObstacle[2] != 1000):
-        #         print("+++++++++++++\nobstacle in lane 2\n++++++++++++")
-        #         self.lane_weight = [0, 1000, 1000, 1000]
-        #     else:
-        #         self.lane_weight = [1000, 1000, 0, 1000]
+    def static_obstacle_aviodance(self):
         
-    
-    def static_n_dynamic_obstacle_aviodance(self):
-        '''
-        lists = []
-        for marker in markerarray.markers:
-            center_x = marker.pose.position.x # LiDAR 기준 x 위치
-            center_y = marker.pose.postiion.y
-            length = marker.scale.x
-            width = marker.scale.y
-            height = marker.scale.z
-            bbox = [center_x, center_y,,,]
-            lists.append(bbox)       
-        '''
-        # subscribe
-        # kf_jj
-        # path weight 생성
+        # 5/5 일단 정적 장애물부터
+        # ㄴ정적 장애물 -완-
+        path_weight = [100.5, 40.4, 25.3, 10.2, 0.1, 10.2, 100.3]
+        obs_1 = [66.9928, 50.4973, 5, 649] # [x, y, lane, closest index]
+        obs_2 = [70.6899, 61.4106, 3, 762]
+        obs_3 = [80.1545, 77.3181, 4, 948]
+        obs_list = [obs_1, obs_2, obs_3] 
+        for obs in obs_list:
+            if obs[3]+3<self.shared.ego.index:
+                continue
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            obs_value = [100/distance, 200/distance, 100/distance]
+            if 0<obs[2]<len(path_weight):
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2]
 
+        print(list(np.round(path_weight)))
+        print("INDEX : ", self.shared.ego.index)
+        print(self.shared.ego.x)
+        print(self.shared.ego.y)
+        return path_weight
 
+    def dynamic_obstacle_aviodance(self):
+        path_weight = [100.5, 90.4, 25.3, 10.2, 0.1, 10.2, 100.3]
+        obs_1_start = [97.01, 104.32, 5, 1266]
+        obs_1_middle_1 = [93.91, 103.9, 4, 1248]
+        obs_1_middle_2 = [92.57, 103.58, 3, 1239]
+        obs_1_end = [89.18, 103.03, 2, 1219]
+        obs_1_list = [obs_1_start, obs_1_middle_1, obs_1_middle_2, obs_1_end] 
+        gain = 0.3
+        for obs in obs_1_list:
+            if obs_1_start[3]+10 < self.shared.ego.index:
+                break
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            print("distance : ", distance)
+            obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain]
+            if 0<obs[2]<len(path_weight):
+                print(obs_value)
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2]
+            
+            gain += 0.1
 
+        print("Weight : ", list(np.round(path_weight, 1)))
+        # print("asdfasdfasdf : ", self.shared.ego.index)
+        # print(self.shared.ego.x)
+        # print(self.shared.ego.y)
+        return path_weight
 
+    def all_obstacle_aviodance(self):
+        path_weight = [1000, 14, 12, 10, 8, 6, 4, 2, 0, 2, 4, 6, 1000]
 
+        static_obs_1 = [66.9928, 50.4973, 10, 649] # [x, y, lane, closest index]
+        static_obs_2 = [70.6899, 61.4106, 6, 762]
+        static_obs_3 = [80.1545, 77.3181, 8, 948]
+        obs_list = [static_obs_1, static_obs_2, static_obs_3] 
+        for obs in obs_list:
+            if obs[3]+3<self.shared.ego.index:
+                continue
+            if static_obs_3[3]+10 < self.shared.ego.index:
+                print("all static obstacle passed")
+                break
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            term = distance**1.3
+            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
 
+            if obs[2]-2>=0:
+                path_weight[obs[2]-2] += obs_value[0]
+            if obs[2]-1>=0:
+                path_weight[obs[2]-1] += obs_value[1]
+            path_weight[obs[2]] += obs_value[2]
+            if obs[2]+1<=len(path_weight):
+                path_weight[obs[2]+1] += obs_value[3]
+            if obs[2]+2<=len(path_weight):
+                path_weight[obs[2]+2] += obs_value[4]
+            
 
+        obs_1_start = [97.01, 104.32, 10, 1266] # x, y, lane, index
+        obs_1_middle_1 = [93.91, 103.9, 8, 1248]
+        obs_1_middle_2 = [92.57, 103.58, 6, 1239]
+        obs_1_end = [89.18, 103.03, 2, 1219]
+        obs_1_list = [obs_1_start, obs_1_middle_1, obs_1_middle_2, obs_1_end] # lane별로 늘려서
+        gain = 0.3
+        for obs in obs_1_list:
+            if obs_1_start[3]+10 < self.shared.ego.index:
+                break
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+            if distance > 15:
+                continue
+            # print("distance : ", distance)
+            obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
+            if 0<obs[2]<len(path_weight):
+                # print(obs_value)
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2] 
+            
+            gain += 0.1
 
+        print("Weight : ", list(np.round(path_weight, 1)))
 
-
-
-    def kalman_Filter_jaejun(self):
-        pass
-        '''
-        장애물 예측
-        ''' 
-
-
-
-
-
-
-
-
-    def weight_function_obstacle_avoidance(self):
-        self.isObstacle = [1000, 1000, 1000, 1000]
-
-        for i in range(len(self.isObstacle)): # 0,1,2
-            path_check = True
-            if path_check == True:
-                self.shared.perception.lidar_lock.acquire()
-                for j in range(len(self.lattice_path[i].x)): # paths' index
-                    if path_check == False:
-                        break
-                    for k in range(len(self.shared.perception.objx)): # of obj
-                        ob_point_distance = sqrt((self.lattice_path[i].x[j] - self.shared.perception.objx[k])**2 + (self.lattice_path[i].y[j] - self.shared.perception.objy[k])**2)
-                        if ob_point_distance < (self.shared.perception.objw[k]/2+1): #and self.Obstacle_in_section == 0:
-                            self.isObstacle[i] = j
-                            path_check = False
-                            break
-                        else:
-                            self.isObstacle[i] = 1000
-                self.min_val = min(self.isObstacle)
-                self.check = abs(self.isObstacle[3]- self.isObstacle[1])
-                self.shared.perception.lidar_lock.release()
-
-        if ((self.isObstacle[3] != 1000 and self.isObstacle[2] != 1000 and self.isObstacle[1] != 1000) and self.check <= 10):
-            #if((self.isObstacle[2] == self.min_val or self.isObstacle[3] == self.min_val) and self.check <= 10): 
-                # print("+++++++++++++\nobstacle in lane 1,2,3\n++++++++++++")
-            self.lane_weight = [0,1000,1000,1000]
-        
-        elif ((self.isObstacle[1] != 1000 and self.isObstacle[2] != 1000) or (self.isObstacle[1] != 1000)):
-            if(self.isObstacle[1] == self.min_val or self.isObstacle[2] == self.min_val): 
-                # print("+++++++++++++\nobstacle in lane 1 and 2 or 1\n++++++++++++")
-                self.lane_weight = [1000,1000,1000, 0]
-        
-        elif ((self.isObstacle[3] != 1000 and self.isObstacle[2] != 1000) or (self.isObstacle[3] != 1000)):
-            if(self.isObstacle[2] == self.min_val or self.isObstacle[3] == self.min_val): 
-                # print("+++++++++++++\nobstacle in lane 2 and 3 or 3\n++++++++++++")
-                self.lane_weight = [0,1000,1000,1000]
-
-        elif (self.isObstacle[2] != 1000):
-            if(self.isObstacle[2] == self.min_val): 
-                # print("+++++++++++++\nobstacle in only 2\n++++++++++++")
-                self.lane_weight = [0,1000,1000,1000]
-
-        elif (self.isObstacle[3] == 1000 and self.isObstacle[2] == 1000 and self.isObstacle[1] == 1000):
-            # print("+++++++++++++\nNo obstacle in lane\n++++++++++++")
-            self.lane_weight = [1000,1000,0,1000]
-
+        # print("asdfasdfasdf : ", self.shared.ego.index)
+        # print(self.shared.ego.x)
+        # print(self.shared.ego.y)
+        return path_weight
 
     def path_maker(self):
         lattice = []

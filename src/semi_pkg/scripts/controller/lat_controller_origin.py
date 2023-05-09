@@ -1,7 +1,9 @@
 from math import sin, degrees, atan2, radians
-
+from numpy import rad2deg
 class LatController():
     def __init__(self, eg, sh, lattice, pl, park):
+        """
+        """
  
         self.ego = eg
         self.shared = sh
@@ -26,8 +28,8 @@ class LatController():
                 elif self.parking.on == "off":
                     self.Pure_pursuit()
 
-                return self.steer
-
+                # return self.steer
+                return self.Pure_pursuit()
             except IndexError:
                 print("++++++++lat_controller+++++++++")
 
@@ -74,10 +76,13 @@ class LatController():
         self.path = self.lattice_path[self.shared.selected_lane]
         # print(len(self.lattice_path), "\n", self.shared.selected_lane)
         # self.path = self.shared.global_path
+        # if self.ego.heading==rad2deg(2.6623):
+        #     self.target_gear=1
+        # else:
+        #     self.target_gear=2
         lookahead = min(self.k * self.ego.speed +
                         self.lookahead_default, 6)
-        target_index = len(self.path.x) - 49
-
+        target_index =len(self.path.x) - 49
         # print(target_index)
 
         # lookahead = min(self.k * self.ego.speed + self.lookahead_default, 7)
@@ -86,7 +91,7 @@ class LatController():
         target_x, target_y = self.path.x[target_index], self.path.y[target_index]
         tmp = degrees(atan2(target_y - self.ego.y,
                             target_x - self.ego.x)) % 360
-
+        
 
         alpha = self.ego.heading - tmp
         angle = atan2(2.0 * self.WB * sin(radians(alpha)) / lookahead, 1.0)

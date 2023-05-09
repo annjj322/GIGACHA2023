@@ -3,6 +3,7 @@ from time import time, sleep
 from math import cos, sin, pi, sqrt
 from local_pkg.msg import Control_Info
 import rospy
+from . parking_diagonal_LJY import *
 
 class Mission():
     def __init__(self, sh, eg, pc, pl):
@@ -13,6 +14,7 @@ class Mission():
         self.plan = pl
         self.parking = self.shared.park
 
+        self.global_path = self.shared.global_path
         self.time_checker = False
         
         self.obstacle_checker = False
@@ -29,6 +31,8 @@ class Mission():
         self.inflection_switch = False
         self.first_stop = False
         self.second_stop = False
+
+        self.backward_tra_create = False
 
         self.speed = 10
 
@@ -92,6 +96,64 @@ class Mission():
                     self.ego.target_gear = 0
                     self.target_control(0, self.speed)
                     self.parking_switch = True
+
+    def Parking_stop_function_LJY(self, index1, index2):
+        self.plan.behavior_decision = "driving"
+        self.target_control(0, 5)
+        if ((self.parking_create == False) and (index1 <= self.ego.index <= index2) and self.plan.behavior_decision == "driving"):
+            self.plan.behavior_decision = "stop"
+            self.target_control(100, 0)
+            sleep(3)
+
+    def Parking_KCity_diagonal_LJY(self):
+        if (self.parking_create == False):
+            if (560 <= self.ego.index <= 580) and self.first_stop == False: # K-City
+                self.plan.behavior_decision = "stop"
+                self.target_control(100, 0)
+                sleep(3)
+                self.first_stop = True
+
+            if ((self.first_stop == True) and (self.second_stop == False) ):
+                if self.backward_tra_create == False:
+                    self.plan.behavior_decision = "backward_trajectory_Create"
+                    self.backward_tra_create = True
+                    print(self.backward_tra_create)
+                self.ego.target_gear = 2
+                self.target_control(0, 5)
+                if 470 <= self.ego.index <= 490:
+                    self.target_control(100, 0)
+                    sleep(3) 
+                    self.second_stop = True # 경로와 직선 사이 교점 근처에 정차
+                
+            
+            # elif (470 <= self.ego.index <= 490) and self.second_stop == True:
+            #     self.plan.behavior_decision = "parking_trajectory_Create"
+            #     self.ego.target_gear = 0
+            #     self.target_control(0, 5)
+                
+            else:
+                self.plan.state = "go"
+
+
+        # if (self.parking_create and self.parking_switch == False):
+        #     if (self.parking_forward_start == False and len(self.parking.forward_path.x) > 0):
+        #         self.parking.on = "on"
+        #         self.plan.behavior_decision = "parkingForwardOn"
+        #         self.parking_forward_start = True
+        #     if (15 <= int(self.parking.stop_index - self.parking.index) <= 45) and (self.parking.direction == 0):
+        #             self.target_control(100, 0)
+        #             sleep(10)
+        #             self.plan.behavior_decision = "parkingBackwardOn"
+        #             self.ego.target_gear = 2
+        #             self.target_control(0, 5)
+        #     elif (15 <= int(self.parking.stop_index - self.parking.index) <= 25) and (self.parking.direction == 2):
+        #             self.target_control(100, 0)
+        #             sleep(3)
+        #             self.plan.behavior_decision = "driving"
+        #             self.parking.on = "off"
+        #             self.ego.target_gear = 0
+        #             self.target_control(0, self.speed)
+        #             self.parking_switch = True
 
     def Parking_KCity_diagonal_jeongseok(self):
         if (self.parking_create == False):

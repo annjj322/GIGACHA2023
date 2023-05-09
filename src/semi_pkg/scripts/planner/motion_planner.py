@@ -3,7 +3,8 @@ import threading
 from time import sleep
 from .sub_function.motion import Motion
 from .sub_function.find_local_path import findLocalPath
-from .sub_function.parking_diagonal import Parking_Motion
+# from .sub_function.parking_diagonal import Parking_Motion
+from .sub_function.parking_diagonal_LJY import Parking_Motion_LJY
 
 
 class MotionPlanner(threading.Thread):
@@ -23,7 +24,7 @@ class MotionPlanner(threading.Thread):
         self.lattice_path = self.shared.lattice_path  # from LPP []
 
         self.motion = Motion(self.shared, self.plan, self.ego)
-        self.park_motion = Parking_Motion(self.shared, self.plan, self.ego)
+        self.park_motion = Parking_Motion_LJY(self.shared, self.plan, self.ego)
 
     def run(self):
         while True:
@@ -36,9 +37,9 @@ class MotionPlanner(threading.Thread):
                     self.motion.select_trajectory()
 
                 elif self.shared.plan.behavior_decision == "driving":
-                    self.motion.lane_weight = [10000, 10000, 10000, 0, 10000, 10000, 10000]
-                    self.motion.static_n_dynamic_obstacle_aviodance()
+                    self.motion.lane_weight = self.motion.all_obstacle_aviodance()
                     self.motion.select_trajectory()
+    
 
                 elif self.shared.plan.behavior_decision == "emergency_avoidance":
                     self.motion.weight_function_AEB()
@@ -46,7 +47,12 @@ class MotionPlanner(threading.Thread):
 
                 ################# parking ######################
                 elif self.shared.plan.behavior_decision == "parking_trajectory_Create":
-                    self.park_motion.make_parking_tra()
+                    # self.park_motion.make_parking_tra()
+                    self.park_motion.making_parking_path()
+
+                elif self.shared.plan.behavior_decision == "backward_trajectory_Create":
+                    # self.park_motion.make_parking_tra()
+                    self.park_motion.making_backward_path()
 
                 elif self.shared.plan.behavior_decision == "parkingForwardOn":
                     self.park_motion.parking_drive(0)

@@ -6,7 +6,6 @@ import rospy
 from local_pkg.msg import Local
 from math import hypot
 from time import sleep
-from numpy import argmin
 
 class Localizer(threading.Thread):
     def __init__(self, parent, rate):
@@ -23,7 +22,7 @@ class Localizer(threading.Thread):
         self.hAcc = 100000
         self.x = 0
         self.y = 0
-        self.index_finder222()
+        self.index_finder()
 
     def local_callback(self, msg):
         self.x = msg.x

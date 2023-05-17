@@ -25,9 +25,11 @@ class Controller(threading.Thread):
         while True:
             try:
                 self.ego.input_steer = self.lat_controller.run() 
+                print(self.plan.behavior_decision)
                 # self.ego.input_speed = self.lon_controller.run()
                 if self.plan.behavior_decision == "driving":
                     self.ego.input_speed = self.ego.map_speed[self.ego.index]
+                    print("speed:", self.ego.input_speed)
                 else:
                     self.ego.input_speed = self.ego.target_speed
 

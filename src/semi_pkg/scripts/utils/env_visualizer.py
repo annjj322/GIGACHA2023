@@ -39,6 +39,18 @@ class Visualizer(threading.Thread):
             "/vis_lattice_path_5", Path, queue_size=1)
         self.vis_lattice_path_6_pub = rospy.Publisher(
             "/vis_lattice_path_6", Path, queue_size=1)
+        self.vis_lattice_path_7_pub = rospy.Publisher(
+            "/vis_lattice_path_7", Path, queue_size=1)
+        self.vis_lattice_path_8_pub = rospy.Publisher(
+            "/vis_lattice_path_8", Path, queue_size=1)
+        self.vis_lattice_path_9_pub = rospy.Publisher(
+            "/vis_lattice_path_9", Path, queue_size=1)
+        self.vis_lattice_path_10_pub = rospy.Publisher(
+            "/vis_lattice_path_10", Path, queue_size=1)
+        self.vis_lattice_path_11_pub = rospy.Publisher(
+            "/vis_lattice_path_11", Path, queue_size=1)    
+        self.vis_lattice_path_12_pub = rospy.Publisher(
+            "/vis_lattice_path_12", Path, queue_size=1)
         self.vis_hy_parking_path_0_pub=rospy.Publisher(
                 "/vis_hy_parking_path",Path,queue_size=1)
         self.vis_hy_parking_path_1_pub=rospy.Publisher(
@@ -88,6 +100,24 @@ class Visualizer(threading.Thread):
 
         self.vis_lattice_path_6 = Path()
         self.vis_lattice_path_6.header.frame_id = "map"
+
+        self.vis_lattice_path_7 = Path()
+        self.vis_lattice_path_7.header.frame_id = "map"
+
+        self.vis_lattice_path_8 = Path()
+        self.vis_lattice_path_8.header.frame_id = "map"
+
+        self.vis_lattice_path_9 = Path()
+        self.vis_lattice_path_9.header.frame_id = "map"
+
+        self.vis_lattice_path_10 = Path()
+        self.vis_lattice_path_10.header.frame_id = "map"
+
+        self.vis_lattice_path_11 = Path()
+        self.vis_lattice_path_11.header.frame_id = "map"
+
+        self.vis_lattice_path_12 = Path()
+        self.vis_lattice_path_12.header.frame_id = "map"
 
         self.vis_parking_path = Path()
         self.vis_parking_path.header.frame_id = "map"
@@ -180,6 +210,12 @@ class Visualizer(threading.Thread):
                 lattice_path_4 = Path()
                 lattice_path_5 = Path()
                 lattice_path_6 = Path()
+                lattice_path_7 = Path()
+                lattice_path_8 = Path()
+                lattice_path_9 = Path()
+                lattice_path_10 = Path()
+                lattice_path_11 = Path()
+                lattice_path_12 = Path()                
 
                 for i in range(len(self.lattice_path)):
                     for j in range(len(self.lattice_path[0].x)):
@@ -205,6 +241,18 @@ class Visualizer(threading.Thread):
                             lattice_path_5.poses.append(read_pose)
                         elif i == 6:
                             lattice_path_6.poses.append(read_pose)
+                        elif i == 7:
+                            lattice_path_7.poses.append(read_pose)
+                        elif i == 8:
+                            lattice_path_8.poses.append(read_pose)
+                        elif i == 9:
+                            lattice_path_9.poses.append(read_pose)
+                        elif i == 10:
+                            lattice_path_10.poses.append(read_pose)
+                        elif i == 11:
+                            lattice_path_11.poses.append(read_pose)
+                        elif i == 12:
+                            lattice_path_12.poses.append(read_pose)
 
                 self.vis_lattice_path_0.poses = lattice_path_0.poses
                 self.vis_lattice_path_1.poses = lattice_path_1.poses
@@ -213,6 +261,12 @@ class Visualizer(threading.Thread):
                 self.vis_lattice_path_4.poses = lattice_path_4.poses
                 self.vis_lattice_path_5.poses = lattice_path_5.poses
                 self.vis_lattice_path_6.poses = lattice_path_6.poses
+                self.vis_lattice_path_7.poses = lattice_path_7.poses
+                self.vis_lattice_path_8.poses = lattice_path_8.poses
+                self.vis_lattice_path_9.poses = lattice_path_9.poses
+                self.vis_lattice_path_10.poses = lattice_path_10.poses
+                self.vis_lattice_path_11.poses = lattice_path_11.poses
+                self.vis_lattice_path_12.poses = lattice_path_12.poses
                 
 
 
@@ -290,6 +344,24 @@ class Visualizer(threading.Thread):
                 
                 self.vis_lattice_path_6.header.stamp = rospy.Time.now()
                 self.vis_lattice_path_6_pub.publish(self.vis_lattice_path_6)
+                
+                self.vis_lattice_path_7.header.stamp = rospy.Time.now()
+                self.vis_lattice_path_7_pub.publish(self.vis_lattice_path_7)
+                
+                self.vis_lattice_path_8.header.stamp = rospy.Time.now()
+                self.vis_lattice_path_8_pub.publish(self.vis_lattice_path_8)
+                
+                self.vis_lattice_path_9.header.stamp = rospy.Time.now()
+                self.vis_lattice_path_9_pub.publish(self.vis_lattice_path_9)
+                
+                self.vis_lattice_path_10.header.stamp = rospy.Time.now()
+                self.vis_lattice_path_10_pub.publish(self.vis_lattice_path_10)
+                
+                self.vis_lattice_path_11.header.stamp = rospy.Time.now()
+                self.vis_lattice_path_11_pub.publish(self.vis_lattice_path_11)
+                
+                self.vis_lattice_path_12.header.stamp = rospy.Time.now()
+                self.vis_lattice_path_12_pub.publish(self.vis_lattice_path_12)
                 
                 self.vis_parking_path.header.stamp = rospy.Time.now()
                 self.vis_parking_path_pub.publish(self.vis_parking_path)

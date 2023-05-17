@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import threading
 from time import sleep
-from .sub_function.motion import Motion
+# from .sub_function.motion import Motion
+from .sub_function.motion_morai import Motion
 from .sub_function.find_local_path import findLocalPath
 # from .sub_function.parking_diagonal import Parking_Motion
 from .sub_function.parking_diagonal_LJY import Parking_Motion_LJY

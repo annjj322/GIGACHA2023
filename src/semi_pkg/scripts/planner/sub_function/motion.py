@@ -1,6 +1,6 @@
 from math import sqrt
 from math import sqrt
-from math import cos,sin,atan2
+from math import cos,sin,atan2,atan
 import numpy as np
 from shared.path import Path
 
@@ -14,224 +14,14 @@ class Motion():
         self.cut_path = self.shared.cut_path # from global path (find_local_path)
         self.lattice_path = self.shared.lattice_path # from LPP []
 
-        self.lane_offset = [5.4, 4.35, 3.3, 2.75, 2.2, 1.7, 1.2, 0.2, 0, -0.25, -0.7, -1.45, -2.2] # for kcity map # 원래 장애물 회피를 위한 오프셋임. 0인 lane이 없어서 주차 때는 아래를 사용
+        # self.lane_offset = [5.4, 4.35, 3.3, 2.75, 2.2, 1.7, 1.2, 0.2, 0, -0.25, -0.7, -1.45, -2.2] # for kcity map # 원래 장애물 회피를 위한 오프셋임. 0인 lane이 없어서 주차 때는 아래를 사용
+        self.lane_offset = [0]
         self.lane_weight = None
 
+        
     def select_trajectory(self):
-        # self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
-        self.shared.selected_lane = 7
-        if self.shared.ego.target_gear == 2:
-            self.shared.selected_lane = 9
-        elif self.shared.plan.behavior_decision == "parkingForwardOn":
-            self.shared.selected_lane = 8
-        elif self.shared.ego.target_gear == 2 and self.shared.plan.behavior_decision == "parkingForwardOn":
-            self.shared.selected_lane = 8
-        print("lane : ", self.shared.selected_lane)
-
-    def static_obstacle_aviodance(self):
-        # 5/5 일단 정적 장애물부터
-        # ㄴ정적 장애물 -완-
-        path_weight = [100.5, 40.4, 25.3, 10.2, 0.1, 10.2, 100.3]
-        obs_1 = [66.9928, 50.4973, 5, 649] # [x, y, lane, closest index]
-        obs_2 = [70.6899, 61.4106, 3, 762]
-        obs_3 = [80.1545, 77.3181, 4, 948]
-        obs_list = [obs_1, obs_2, obs_3] 
-        for obs in obs_list:
-            if obs[3]+3<self.shared.ego.index:
-                continue
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            obs_value = [100/distance, 200/distance, 100/distance]
-            if 0<obs[2]<len(path_weight):
-                path_weight[obs[2]-1] += obs_value[0]
-                path_weight[obs[2]] += obs_value[1]
-                path_weight[obs[2]+1] += obs_value[2]
-
-        print(list(np.round(path_weight)))
-        print("INDEX : ", self.shared.ego.index)
-        print(self.shared.ego.x)
-        print(self.shared.ego.y)
-        return path_weight
-
-    def dynamic_obstacle_aviodance(self):
-        path_weight = [100.5, 90.4, 25.3, 10.2, 0.1, 10.2, 100.3]
-        obs_1_start = [97.01, 104.32, 5, 1266]
-        obs_1_middle_1 = [93.91, 103.9, 4, 1248]
-        obs_1_middle_2 = [92.57, 103.58, 3, 1239]
-        obs_1_end = [89.18, 103.03, 2, 1219]
-        obs_1_list = [obs_1_start, obs_1_middle_1, obs_1_middle_2, obs_1_end] 
-        gain = 0.3
-        for obs in obs_1_list:
-            if obs_1_start[3]+10 < self.shared.ego.index:
-                break
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            print("distance : ", distance)
-            obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain]
-            if 0<obs[2]<len(path_weight):
-                print(obs_value)
-                path_weight[obs[2]-1] += obs_value[0]
-                path_weight[obs[2]] += obs_value[1]
-                path_weight[obs[2]+1] += obs_value[2]
-            
-            gain += 0.1
-
-        print("Weight : ", list(np.round(path_weight, 1)))
-        # print("asdfasdfasdf : ", self.shared.ego.index)
-        # print(self.shared.ego.x)
-        # print(self.shared.ego.y)
-        return path_weight
-
-    def all_obstacle_aviodance(self):
-        """
-        This function calculates the optimal path for a vehicle to navigate through a set of static and dynamic obstacles.
-
-        Case 1 -> started from the right, slow object
-        Case 2 -> started from the left, fast object
-        Case 3 -> started from the left, slow object
-        Case 4 -> started from the right, fast object
-
-        Args:
-        - obstacle_list: A list containing the position and size of each obstacle. Each list should have x, y, lane, closest index
-        - lane_weight: A float that represents the weight of the lane. It determines the cost of traveling through each lane. The default value is 8 (index).
-        
-        Returns:
-        - A list representing the weights for the vehicle to navigate through the obstacles.
-        """
-        path_weight = [1000, 14, 12, 10, 8, 6, 4, 2, 0, 2, 4, 6, 1000]
-
-        static_obs_1 = [66.9928, 50.4973, 10, 649] # [x, y, lane, closest index]
-        static_obs_2 = [70.6899, 61.4106, 6, 762]
-        static_obs_3 = [80.1545, 77.3181, 8, 948]
-        obs_list = [static_obs_1, static_obs_2, static_obs_3] 
-        for obs in obs_list:
-            if obs[3]+3<self.shared.ego.index:
-                continue
-            if static_obs_3[3]+10 < self.shared.ego.index:
-                print("all static obstacle passed")
-                break
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            term = distance**1.3
-            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
-
-            if obs[2]-2>=0:
-                path_weight[obs[2]-2] += obs_value[0]
-            if obs[2]-1>=0:
-                path_weight[obs[2]-1] += obs_value[1]
-            path_weight[obs[2]] += obs_value[2]
-            if obs[2]+1<=len(path_weight):
-                path_weight[obs[2]+1] += obs_value[3]
-            if obs[2]+2<=len(path_weight):
-                path_weight[obs[2]+2] += obs_value[4]
-            
-
-        # obs_1_start = [97.01, 104.32, 10, 1266] # x, y, lane, index
-        # obs_1_middle_1 = [93.91, 103.9, 8, 1248]
-        obs_1_middle_2 = [92.57, 103.58, 9, 1239]
-        obs_1_end = [89.18, 103.03, 7, 1219]
-        # obs_1_list = [obs_1_start, obs_1_middle_1, obs_1_middle_2, obs_1_end] # lane별로 늘려서
-        obs_1_list = [obs_1_middle_2, obs_1_end] # lane별로 늘려서
-        gain = 0.3
-        for obs in obs_1_list:
-            if obs_1_end[3]+10 < self.shared.ego.index:
-                break
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            if distance > 15:
-                continue
-            # print("distance : ", distance)
-            obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
-            if 0<obs[2]<len(path_weight):
-                # print(obs_value)
-                path_weight[obs[2]-1] += obs_value[0]
-                path_weight[obs[2]] += obs_value[1]
-                path_weight[obs[2]+1] += obs_value[2] 
-            
-            gain += 0.2
-
-        # obs_2_start = [104.55, 130.04, 4, 1530] # x, y, lane, index
-        # obs_2_middle_1 = [106.33, 129.30, 6, 1532]
-        obs_2_middle_2 = [107.22, 128.74, 8, 1531]
-        obs_2_end = [108.84, 127.63, 10, 1529]
-        # obs_2_list = [obs_2_start, obs_2_middle_1, obs_2_middle_2, obs_2_end] # lane별로 늘려서
-        obs_2_list = [obs_2_middle_2, obs_2_end] # lane별로 늘려서
-        gain = 0.3
-        for obs in obs_2_list:
-            if obs_2_end[3]+10 < self.shared.ego.index:
-                break
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            if distance > 15:
-                continue
-            print("distance : ", distance)
-            term = distance**1.3
-            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
-
-            # obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
-            if 0<obs[2]<len(path_weight):
-                # print(obs_value)
-                path_weight[obs[2]-1] += obs_value[0]
-                path_weight[obs[2]] += obs_value[1]
-                path_weight[obs[2]+1] += obs_value[2] 
-
-            gain += 0.1
-
-        # obs_3_start = [104.55, 130.04, 4, 1530] # x, y, lane, index
-        # obs_3_middle_1 = [106.33, 129.30, 6, 1532]
-        obs_3_middle_2 = [90.06, 173.13, 7, 2175]
-        obs_3_end = [91.98, 173.69, 9, 2162]
-        # obs_3_list = [obs_3_start, obs_3_middle_1, obs_3_middle_2, obs_3_end] # lane별로 늘려서
-        obs_3_list = [obs_3_middle_2, obs_3_end] # lane별로 늘려서
-        gain = 0.3
-        for obs in obs_3_list:
-            if obs_3_end[3]+10 < self.shared.ego.index:
-                break
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            if distance > 15:
-                continue
-            print("distance : ", distance)
-            term = distance**1.3
-            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
-
-            # obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
-            if 0<obs[2]<len(path_weight):
-                # print(obs_value)
-                path_weight[obs[2]-1] += obs_value[0]
-                path_weight[obs[2]] += obs_value[1]
-                path_weight[obs[2]+1] += obs_value[2] 
-
-            gain += 0.1
-
-        # obs_3_start = [104.55, 130.04, 4, 1530] # x, y, lane, index
-        # obs_3_middle_1 = [106.33, 129.30, 6, 1532]
-        obs_4_middle_2 = [77.20, 180.35, 8, 2323]
-        obs_4_end = [79.41, 179.05, 6, 2301]
-        # obs_4_list = [obs_4_start, obs_4_middle_1, obs_4_middle_2, obs_4_end] # lane별로 늘려서
-        obs_4_list = [obs_4_middle_2, obs_4_end] # lane별로 늘려서
-        gain = 0.3
-        for obs in obs_4_list:
-            if obs_4_end[3]+10 < self.shared.ego.index:
-                break
-            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
-            if distance > 15:
-                continue
-            print("distance : ", distance)
-            term = distance**1.3
-            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
-
-            # obs_value = [100/(distance**0.5)*gain, 200/(distance**0.5)*gain, 100/(distance**0.5)*gain] # gain 3->5
-            if 0<obs[2]<len(path_weight):
-                # print(obs_value)
-                path_weight[obs[2]-1] += obs_value[0]
-                path_weight[obs[2]] += obs_value[1]
-                path_weight[obs[2]+1] += obs_value[2] 
-
-            gain += 0.1
-
-
-        print("Weight : ", list(np.round(path_weight, 1)))
-        
-
-        print("ego index : ", self.shared.ego.index)
-        print(self.shared.ego.x)
-        print(self.shared.ego.y)
-        return path_weight
+        # for obs avoidance
+        self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
 
     def path_maker(self):
         lattice = []
@@ -263,8 +53,6 @@ class Motion():
             world_current_point = np.array([[self.ego.x], [self.ego.y], [1]])
             local_current_point = det_t.dot(world_current_point)
 
-            # self.lane_offset = [3.5, 0, -3.5, -4]
-            # self.lane_offset = [5.5, 3.5, 1.1, 0, -1.1, -2.2, -3.3]
             local_lattice_points = []
             for i in range(len(self.lane_offset)):
                 local_lattice_points.append([local_end_point[0][0], local_end_point[1][0] + self.lane_offset[i], 1])
@@ -340,4 +128,84 @@ class Motion():
                 self.lattice_path.append(lattice[i])
         else:
             for i in range(len(self.lane_offset)):
-                self.lattice_path[i] = lattice[i]
+                self.lattice_path[i] = lattice[i]  
+
+    def obs_lane(self, cx, cy):
+        distance = []
+        for lane in self.shared.lattice_path:
+            dx = [cx - x for x in lane.x[0 : -1]]
+            dy = [cy - y for y in lane.y[0 : -1]]
+            dist = np.hypot(dx, dy)
+            np_dist = np.array(dist)
+            distance.append(np.min(np_dist))
+        
+        lane_num = int(np.argmin(distance))
+
+        return lane_num
+
+    def obs_nearest_index(self, cx, cy):
+
+        dx = [cx - x for x in self.global_path.x[0 : -1]]
+        dy = [cy - y for y in self.global_path.y[0 : -1]]
+        dist = np.hypot(dx, dy)
+
+        index = int(np.argmin(dist))
+
+        return index
+
+    def all_obstacle_aviodance(self):
+
+        """
+        This function calculates the optimal path for a vehicle to navigate through a set of static and dynamic obstacles.
+
+        Case 1 -> started from the right, slow object
+        Case 2 -> started from the left, fast object
+        Case 3 -> started from the left, slow object
+        Case 4 -> started from the right, fast object
+
+        Args:
+        - obstacle_list: A list containing the position and size of each obstacle. Each list should have x, y, lane, closest index
+        - lane_weight: A float that represents the weight of the lane. It determines the cost of traveling through each lane. The default value is 8 (index).
+        
+        Returns:
+        - A list representing the weights for the vehicle to navigate through the obstacles.
+        """
+        path_weight = [1000, 14, 12, 10, 8, 6, 4, 2, 0, 2, 4, 6, 1000]
+
+        l = ((self.L + self.shared.perception.rx)**2 + (self.shared.perception.ry)**2)**0.5
+        cx = self.shared.ego.x + l*cos(np.radians(self.shared.ego.heading) - atan(self.ry/(self.rx + self.L))) # 이게 중요
+        cy = self.shared.ego.y + l*sin(np.radians(self.shared.ego.heading) - atan(self.ry/(self.rx + self.L))) # 이게 중요
+        obs_ind = self.obs_nearest_index(cx, cy)
+        lane_num = self.obs_lane(cx, cy)
+        obs_predict_1 = [cx, cy, lane_num, obs_ind]
+        obs_predict_2 = [cx, cy, lane_num, obs_ind]
+
+        obs_list = [obs_predict_1, obs_predict_2] # lane별로 늘려서
+        gain = 0.3
+
+        for obs in obs_list:
+            # 1m 이상 지났을 경우 반영 중단
+            if obs_predict_2[3]+10 < self.shared.ego.index: 
+                break
+
+            # 장애물 거리 측정
+            distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
+
+            # 15m 이상 떨어져 있을 경우 무시
+            if distance > 15:
+                continue
+            
+            # weight 반영
+            term = distance**1.3 # 실험적 값
+            obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
+            if 0<obs[2]<len(path_weight):
+                path_weight[obs[2]-1] += obs_value[0]
+                path_weight[obs[2]] += obs_value[1]
+                path_weight[obs[2]+1] += obs_value[2] 
+            gain += 0.1
+
+
+        print("Weight : ", list(np.round(path_weight, 1)))
+        return path_weight
+
+   

@@ -3,15 +3,18 @@ import rospy
 from visualization_msgs.msg import MarkerArray
 from std_msgs.msg import Int32
 from vision_msgs.msg import Detection2DArray
-
+from geometry_msgs.msg import PoseArray
+from math import atan, sin, cos
+from numpy import radians
 class Perception_():
    def __init__(self):
       rospy.Subscriber("/obstacles_markers", MarkerArray, self.lidar_callback)
       rospy.Subscriber("/traffic_bbox", Detection2DArray, self.traffic_callback)
       rospy.Subscriber("/Parking_num", Int32, self.parking_callback)
+      rospy.Subscriber("/pcd", PoseArray, self.obs_callback)
 
-      self.signx = 0
-      self.signy = 0
+      self.rx = None
+      self.ry = None
       self.objx = []
       self.objy = []
       self.objw = []
@@ -85,3 +88,13 @@ class Perception_():
       # self.parking_num = 2
       #####################
       self.parking_num = msg.data
+   
+   def obs_callback(self, msg):
+      if len(msg.markers) != 0:
+         self.rx = msg.x
+         self.ry = msg.y
+         print("obs info from LiDAR callbacked")
+
+         # l = ((self.L + self.rx)**2 + (self.ry)**2)**0.5
+         # cx = self.shared.ego.x + l*cos(radians(self.shared.ego.heading) - atan(self.ry/(self.rx + self.L))) # 이게 중요
+         # cy = self.shared.ego.y + l*sin(radians(self.shared.ego.heading) - atan(self.ry/(self.rx + self.L))) # 이게 중요

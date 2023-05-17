@@ -18,15 +18,15 @@ class Motion():
         self.lane_weight = None
 
     def select_trajectory(self):
-        # self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
-        self.shared.selected_lane = 7
-        if self.shared.ego.target_gear == 2:
-            self.shared.selected_lane = 9
-        elif self.shared.plan.behavior_decision == "parkingForwardOn":
-            self.shared.selected_lane = 8
-        elif self.shared.ego.target_gear == 2 and self.shared.plan.behavior_decision == "parkingForwardOn":
-            self.shared.selected_lane = 8
-        print("lane : ", self.shared.selected_lane)
+        self.shared.selected_lane = self.lane_weight.index(min(self.lane_weight))
+        # self.shared.selected_lane = 7
+        # if self.shared.ego.target_gear == 2:
+        #     self.shared.selected_lane = 9
+        # elif self.shared.plan.behavior_decision == "parkingForwardOn":
+        #     self.shared.selected_lane = 8
+        # elif self.shared.ego.target_gear == 2 and self.shared.plan.behavior_decision == "parkingForwardOn":
+        #     self.shared.selected_lane = 8
+        # print("lane : ", self.shared.selected_lane)
 
     def static_obstacle_aviodance(self):
         # 5/5 일단 정적 장애물부터
@@ -106,7 +106,7 @@ class Motion():
             if obs[3]+3<self.shared.ego.index:
                 continue
             if static_obs_3[3]+10 < self.shared.ego.index:
-                print("all static obstacle passed")
+                # print("all static obstacle passed")
                 break
             distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
             term = distance**1.3
@@ -159,7 +159,7 @@ class Motion():
             distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
             if distance > 15:
                 continue
-            print("distance : ", distance)
+            # print("distance : ", distance)
             term = distance**1.3
             obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
 
@@ -185,7 +185,7 @@ class Motion():
             distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
             if distance > 15:
                 continue
-            print("distance : ", distance)
+            # print("distance : ", distance)
             term = distance**1.3
             obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
 
@@ -211,7 +211,7 @@ class Motion():
             distance = sqrt((self.shared.ego.x-obs[0])**2+(self.shared.ego.y-obs[1])**2)
             if distance > 15:
                 continue
-            print("distance : ", distance)
+            # print("distance : ", distance)
             term = distance**1.3
             obs_value = [50/term, 100/term, 200/term, 100/term, 50/term]
 
@@ -225,12 +225,12 @@ class Motion():
             gain += 0.1
 
 
-        print("Weight : ", list(np.round(path_weight, 1)))
+        print("Weight :", list(np.round(path_weight, 1)))
         
 
-        print("ego index : ", self.shared.ego.index)
-        print(self.shared.ego.x)
-        print(self.shared.ego.y)
+        # print("ego index : ", self.shared.ego.index)
+        # print(self.shared.ego.x)
+        # print(self.shared.ego.y)
         return path_weight
 
     def path_maker(self):

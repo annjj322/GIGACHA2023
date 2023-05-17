@@ -81,7 +81,7 @@ if __name__ == "__main__":
         '--map',
         
         #default='kcity_simul/semi_map_driving', # lattice planning
-        default='kcity_simul/semi_map', # parking
+        default='kcity_simul/semi_map_driving', # parking
         #default='kcity_simul/parallelpark_map', # parking2
         help='kcity/map1, songdo/map2, yonghyeon/Yonghyeon, kcity_simul/left_lane, kcity_simul/right_lane, kcity_simul/final, inha_parking/gpp, kcity_simul/semi_map, kcity_simul/parallelpark'
     )

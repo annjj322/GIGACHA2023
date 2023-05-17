@@ -39,8 +39,11 @@ class Visualizer(threading.Thread):
             "/vis_lattice_path_5", Path, queue_size=1)
         self.vis_lattice_path_6_pub = rospy.Publisher(
             "/vis_lattice_path_6", Path, queue_size=1)
-        
-            
+        self.vis_hy_parking_path_0_pub=rospy.Publisher(
+                "/vis_hy_parking_path",Path,queue_size=1)
+        self.vis_hy_parking_path_1_pub=rospy.Publisher(
+                "/vis_hy_parking_path",Path,queue_size=1)
+                
 
         self.vis_trajectory_pub = rospy.Publisher(
             "/vis_trajectory", PointCloud, queue_size=1)
@@ -98,6 +101,10 @@ class Visualizer(threading.Thread):
         self.vis_pose_dr = Odometry()
         self.vis_pose_dr.header.frame_id = "map"
 
+        self.vis_hy_parking_path_0=Path()
+        self.vis_hy_parking_path_0.header.frame_id = "map"
+        self.vis_hy_parking_path_1=Path()
+        self.vis_hy_parking_path_1.header.frame_id = "map"
         self.t = time()
         self.d = time()
 
@@ -253,7 +260,7 @@ class Visualizer(threading.Thread):
                     read_pose.pose.orientation.w = 1
                     parking.poses.append(read_pose)
                 self.vis_parking_path.poses = parking.poses
-
+                    
                 # publish
                 self.vis_obj_pub1.publish(vis_obj1)
 

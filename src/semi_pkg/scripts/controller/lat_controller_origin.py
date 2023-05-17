@@ -10,7 +10,7 @@ class LatController():
         self.plan = pl
         self.parking = park
         self.lattice_path = lattice 
-
+    
         self.global_path = self.shared.global_path
         self.WB = 1.04 # wheel base
         self.k = 0.15 #1.5
@@ -26,27 +26,28 @@ class LatController():
                     self.parking_run2()
                 elif self.parking.on == "U_turn":
                     self.U_turn()
+                elif self.parking.on == "hy":
+                    self.Pure_pursuit_hy()
                 elif self.parking.on == "off":
                     self.Pure_pursuit()
 
-                # return self.steer
-                return self.Pure_pursuit()
+                return self.steer
+                #return self.Pure_pursuit()
             except IndexError:
                 print("++++++++lat_controller+++++++++")
 
     def parking_run(self):
         if self.parking.direction == 0:
-            self.path = self.parking.forward_path
-            lookahead = 5
+            self.path = self.global_path
+            lookahead = 2
+         
         else:
-            self.path = self.parking.backward_path
-            lookahead = 5
-        # if not self.parking.inflection_on:
-        # target_index = lookahead + len(self.parking.backward_path.x)
-        # else:
-        #     target_index = len(self.parking.backward_path.x) - 1
-
-        target_x, target_y = self.path.x[-1], self.path.y[-1]
+            self.path = self.global_path
+            lookahead = 2
+            
+        print('주차중')
+        
+        target_x, target_y = self.path.x[self.ego.index+lookahead], self.path.y[self.ego.index+lookahead]
         tmp = degrees(atan2(target_y - self.ego.y, target_x - self.ego.x)) % 360
 
         heading = self.ego.heading
@@ -60,9 +61,9 @@ class LatController():
         angle = atan2(2.0 * self.WB *
                       sin(radians(alpha)) / lookahead, 1.0)
 
-        ###### Back Driving ######
-        if self.ego.target_gear == 2:
-            angle = -1.5*angle
+        # ###### Back Driving ######
+        # if self.ego.target_gear == 2:
+        #     angle = -1.5*angle
         ##########################
 
         if degrees(angle) < 3.5 and degrees(angle) > -3.5:
@@ -81,10 +82,13 @@ class LatController():
         #     self.target_gear=1
         # else:
         #     self.target_gear=2
+        print(self.ego.target_gear)
         lookahead = min(self.k * self.ego.speed +
                         self.lookahead_default, 6)
         target_index =len(self.path.x) - 49
         # print(target_index)
+        print('ego index', self.ego.index)
+        print(' ego  heading ', self.ego.heading)
 
         # lookahead = min(self.k * self.ego.speed + self.lookahead_default, 7)
         # target_index = int(lookahead * 10)
@@ -105,36 +109,104 @@ class LatController():
         self.steer = max(min(tmp_steer, 27.0), -27.0)
         return self.steer
 
+    # def parking_run_LJY(self):
+    #     # if self.parking.direction == 0:
+    #     #     self.global_path = self.parking.forward_path
+    #     #     lookahead = 5
+    #     # else:
+    #     #     self.global_path = self.parking.backward_path
+    #     lookahead = 2
+
+    #     target_x, target_y = self.global_path.x[self.ego.index + lookahead], self.global_path.y[self.ego.index + lookahead]
+    #     # target_x, target_y = self.path.x[self.ego.index + lookahead], self.path.y[self.ego.index + lookahead]
+    #     tmp = degrees(atan2(target_y - self.ego.y, target_x - self.ego.x)) % 360
+
+    #     heading = self.ego.heading
+    #     ###### Back Driving ######
+    #     if self.ego.target_gear == 2:
+    #         heading += 90
+    #         heading %= 360
+    #     ##########################
+
+    #     alpha = heading - tmp
+    #     angle = atan2(2.0 * self.WB *
+    #                   sin(radians(alpha)) / lookahead, 1.0)
+
+    #     ###### Back Driving ######
+    #     # if self.ego.target_gear == 2:
+    #         # angle = -1.5*angle
+    #         # angle = -angle
+    #     ##########################
+
+    #     if degrees(angle) < 3.5 and degrees(angle) > -3.5:
+    #         angle = 0
+
+    #     self.steer = max(min(degrees(angle), 27.0), -27.0)
+
     def parking_run_LJY(self):
-        # if self.parking.direction == 0:
-        #     self.global_path = self.parking.forward_path
-        #     lookahead = 5
+        self.path = self.lattice_path[self.shared.selected_lane]
+        # print(len(self.lattice_path), "\n", self.shared.selected_lane)
+        # self.path = self.shared.global_path
+        # if self.ego.heading==rad2deg(2.6623):
+        #     self.target_gear=1
         # else:
-        #     self.global_path = self.parking.backward_path
-        lookahead = 2
+        #     self.target_gear=2
+        print(self.ego.target_gear)
+        lookahead = min(self.k * self.ego.speed +
+                        2, 3)
+        target_index =len(self.path.x) - 49
+        # print(target_index)
+        print('ego index', self.ego.index)
+        print(' ego  heading ', self.ego.heading)
+        # lookahead = min(self.k * self.ego.speed + self.lookahead_default, 7)
+        # target_index = int(lookahead * 10)
 
-        target_x, target_y = self.global_path.x[self.ego.index + lookahead], self.global_path.y[self.ego.index + lookahead]
-        tmp = degrees(atan2(target_y - self.ego.y, target_x - self.ego.x)) % 360
+        target_x, target_y = self.path.x[target_index], self.path.y[target_index]
+        tmp = degrees(atan2(target_y - self.ego.y,
+                            target_x - self.ego.x)) % 360
+        
 
-        heading = self.ego.heading
-        ###### Back Driving ######
-        if self.ego.target_gear == 2:
-            heading += 180
-            heading %= 360
-        ##########################
-
-        alpha = heading - tmp
-        angle = atan2(2.0 * self.WB *
-                      sin(radians(alpha)) / lookahead, 1.0)
-
-        # ###### Back Driving ######
-        # if self.ego.target_gear == 2:
-        #     angle = -1.5*angle
-        # ##########################
-
-        if degrees(angle) < 3.5 and degrees(angle) > -3.5:
+        alpha = self.ego.heading - tmp
+        angle = atan2(2.0 * self.WB * sin(radians(alpha)) / lookahead, 1.0)
+        if degrees(angle) < 0.5 and degrees(angle) > -0.5:
             angle = 0
+        tmp_steer = degrees(angle)
+        if abs(tmp_steer) > 5: # [degree] 곡선 부드럽게 하는 코드
+            tmp_steer *= 0.8
 
-        self.steer = max(min(degrees(angle), 27.0), -27.0)
+        self.steer = max(min(tmp_steer, 27.0), -27.0)
+        return self.steer
 
+    def Pure_pursuit_hy(self):
+        self.path = self.lattice_path[self.shared.selected_lane]
+        # print(len(self.lattice_path), "\n", self.shared.selected_lane)
+        # self.path = self.shared.global_path
+        # if self.ego.heading==rad2deg(2.6623):
+        #     self.target_gear=1
+        # else:
+        #     self.target_gear=2
+        print(self.ego.target_gear)
+        lookahead = min(self.k * self.ego.speed +
+                        self.lookahead_default, 1)
+        target_index =len(self.path.x) - 49
+        # print(target_index)
+        print('ego index', self.ego.index)
+
+        # lookahead = min(self.k * self.ego.speed + self.lookahead_default, 7)
+        # target_index = int(lookahead * 10)
+
+        target_x, target_y = self.path.x[target_index], self.path.y[target_index]
+        tmp = degrees(atan2(target_y - self.ego.y,
+                            target_x - self.ego.x)) % 360
+        
+
+        alpha = self.ego.heading - tmp
+        angle = atan2(2.0 * self.WB * sin(radians(alpha)) / lookahead, 1.0)
+        if degrees(angle) < 0.5 and degrees(angle) > -0.5:
+            angle = 0
+        tmp_steer = degrees(angle)
+        # if abs(tmp_steer) > 5: # [degree] 곡선 부드럽게 하는 코드
+        #     tmp_steer *= 0.8
+
+        self.steer = max(min(tmp_steer, 27.0), -27.0)
         return self.steer

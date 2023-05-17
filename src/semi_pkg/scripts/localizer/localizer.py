@@ -6,6 +6,7 @@ import rospy
 from local_pkg.msg import Local
 from math import hypot
 from time import sleep
+from numpy import argmin
 
 class Localizer(threading.Thread):
     def __init__(self, parent, rate):
@@ -22,6 +23,7 @@ class Localizer(threading.Thread):
         self.hAcc = 100000
         self.x = 0
         self.y = 0
+        self.index_finder222()
 
     def local_callback(self, msg):
         self.x = msg.x
@@ -55,6 +57,7 @@ class Localizer(threading.Thread):
         # save_idx = self.ego.index                    # for not decreasing index
         save_idx = 0
         for i in range(max(self.ego.index - step_size, 0), self.ego.index + step_size):
+        # for i in range(len(self.global_path.x)): 
             try:
                 dis = hypot(
                     self.global_path.x[i] - self.ego.x, self.global_path.y[i] - self.ego.y)
@@ -66,6 +69,13 @@ class Localizer(threading.Thread):
                 save_idx = i
         self.ego.index = min_idx
         self.perception.signname = self.global_path.mission[self.ego.index]
+
+    def index_finder222(self):
+        dx = [self.ego.x - x for x in self.global_path.x]
+        dy = [self.ego.y - y for y in self.global_path.y]
+        ind=3000
+        self.ego.index = ind
+
        
         
     def dead_reckoning(self):
@@ -82,5 +92,3 @@ class Localizer(threading.Thread):
             self.dead_reckoning()
 
             sleep(self.period)
-
-

@@ -45,8 +45,8 @@ class Serial_IO:
         self.stop_index = len(self.global_path_x)
        
         # Serial Connect
-        # self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
-        self.ser = serial.Serial("/dev/ttyUSB0", 115200) # Simulation
+        self.ser = serial.Serial("/dev/erp42", 115200) # Real World        
+        # self.ser = serial.Serial("/dev/ttyUSB0", 115200) # Simulation
 
 
         # ROS Publish
@@ -126,7 +126,7 @@ class Serial_IO:
                     self.setValue(0,self.pure_pursuit(), 100)
                     passing = True
                 else:    
-                    self.setValue(20, self.pure_pursuit(), 0)
+                    self.setValue(10, self.pure_pursuit(), 0)
 
             if self.serial_msg.gear == 1:
                 passing = False

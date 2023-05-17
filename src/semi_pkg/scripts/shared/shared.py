@@ -20,6 +20,5 @@ class Shared:
         self.lattice_path = []
         self.selected_lane = 1
         self.plan = Plan()
-
         # for parking
         self.park = Parking()

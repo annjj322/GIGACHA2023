@@ -17,3 +17,4 @@ class Parking():
         self.o2y = 0
         self.o3x = 0
         self.o3y = 0
+        

@@ -37,17 +37,17 @@ class Parking_Motion_LJY():
         self.cnt = False
 
 ##########################################################
+        self.path_storage_x = []
+        self.path_storage_y = []
+##########################################################
         self.Ledgedata = [64.6268, 42.5435]
         self.Redgedata = [65.5141, 40.1389]
         self.middlepoint = [(self.Ledgedata[0] + self.Redgedata[0])/2,(self.Ledgedata[1] + self.Redgedata[1])/2]
         dest_x, dest_y = self.find_destination()
         self.destination = [dest_x, dest_y]
-        cont_x, cont_y = self.find_contact()
-        self.contact_point = [cont_x, cont_y]
 
     def find_contact(self):
         # find global line
-
         xs = self.global_path.x[100]
         ys = self.global_path.y[100]
         xf = self.global_path.x[500]
@@ -61,19 +61,19 @@ class Parking_Motion_LJY():
         vertical_intercept = -vertical_inclination*self.middlepoint[0] + self.middlepoint[1]
 
         # find contact point
-        x = (global_intercept - vertical_intercept)/(vertical_inclination - global_inclination)
-        y = vertical_inclination*x + vertical_intercept
+        cont_x = (global_intercept - vertical_intercept)/(vertical_inclination - global_inclination)
+        cont_y = vertical_inclination*cont_x + vertical_intercept
 
-        return x, y
+        return cont_x, cont_y
     
     def find_destination(self):
         pl_inclination = (self.Ledgedata[1] - self.Redgedata[1])/(self.Ledgedata[0] - self.Redgedata[0])
         vertical_inclination = -1/pl_inclination
 
-        x2 = self.middlepoint[0] + 2.6/(sqrt(vertical_inclination**2+1))
-        y2 = self.middlepoint[1] + 2.6*vertical_inclination/(sqrt(vertical_inclination**2+1))
+        dest_x = self.middlepoint[0] + 2.6/(sqrt(vertical_inclination**2+1))
+        dest_y = self.middlepoint[1] + 2.6*vertical_inclination/(sqrt(vertical_inclination**2+1))
 
-        return x2, y2
+        return dest_x, dest_y
     
     def nearest_index(self, pointx, pointy):
         dx = [pointx - x for x in self.global_path.x[0:-1]]
@@ -85,27 +85,34 @@ class Parking_Motion_LJY():
         return ind
 
     def making_forward_path(self):
-        ind = self.ego.index
-        
-        parking_path_x = [self.global_path.x[ind], self.global_path.x[ind+1], self.middlepoint[0], self.destination[0]]
-        parking_path_y = [self.global_path.y[ind], self.global_path.y[ind+1], self.middlepoint[1], self.destination[1]]
+        ind1 = self.nearest_index(self.ego.x, self.ego.y)
+        cont_x, cont_y = self.find_contact()
+        ind2 = self.nearest_index(cont_x, cont_y)
+
+        parking_path_x = [self.global_path.x[ind1], self.global_path.x[ind2-21], self.global_path.x[ind2-20], self.middlepoint[0], self.destination[0]]
+        parking_path_y = [self.global_path.y[ind1], self.global_path.y[ind2-21], self.global_path.y[ind2-20], self.middlepoint[1], self.destination[1]]
+        # parking_path_x = [self.global_path.x[ind2], self.middlepoint[0], self.destination[0]]
+        # parking_path_y = [self.global_path.y[ind2], self.middlepoint[1], self.destination[1]]
+        # parking_path_x = [self.global_path.x[ind1], self.global_path.x[ind1+1], self.middlepoint[0], self.destination[0]]
+        # parking_path_y = [self.global_path.y[ind1], self.global_path.y[ind1+1], self.middlepoint[1], self.destination[1]]
 
         # parking_space_x = [64.6268, 69.2112, 70.2465, 65.5141, 64.6268]
         # parking_space_y = [42.5435, 44.3932, 41.9886, 40.1389, 42.5435]
 
         cx, cy, cyaw, ck, s = calc_spline_course(parking_path_x, parking_path_y, ds = 0.1)
 
-        start_point_path_x, start_point_path_y = cx[0], cy[0]
+        self.path_storage_x, self.path_storage_y = cx, cy
 
         self.global_path.x, self.global_path.y = cx, cy
 
-    def making_backward_path(self):
-        ind1 = self.ego.index
-        ind2 = self.nearest_index(self.contact_point[0], self.contact_point[1])
+    def making_reverse_forward_path(self):
+        self.global_path.x, self.global_path.y = list(reversed(self.path_storage_x)), list(reversed(self.path_storage_y))  
 
-        # backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2 - 50]]
-        # backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2 - 50]]
-        
+    def making_backward_path(self):
+        ind1 = self.nearest_index(self.ego.x, self.ego.y)
+        cont_x, cont_y = self.find_contact()
+        ind2 = self.nearest_index(cont_x, cont_y)
+
         backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2 - 100]]
         backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2 - 100]]
         
@@ -115,9 +122,7 @@ class Parking_Motion_LJY():
         print("ind2: ",ind2)
 
         self.global_path.x, self.global_path.y = cx, cy  
-        # self.heading = rad2deg(atan2(
-        #     (self.global_path.y[ind1]-self.global_path.y[ind2]), (self.global_path.x[ind1]-self.global_path.x[ind2])))%360
-
+        
 ##########################################################
 
     def make_parking_tra(self):

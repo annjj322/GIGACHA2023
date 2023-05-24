@@ -10,7 +10,7 @@ from ahrs import IMU
 from odometry import DR
 from local_functions import quaternion_from_euler
 from sig_int_handler import Activate_Signal_Interrupt_Handler
-
+from collections import deque
 
 class Localization():
     def __init__(self, base):
@@ -57,17 +57,36 @@ class Localization():
 
         else:
             self.heading = (self.imu.heading + self.offset)
+        
+        
+    def true_heading(self):
+        recent_heading = deque(maxlen=3)
+
+        recent_heading.append(self.heading)
+
+        heading_offset = 130
+        
+        last = recent_heading[0]
+        
+        if abs(last - self.heading) > heading_offset :
+            self.heading = last
+            recent_heading.append(last)
+        else :
+            recent_heading.append(self.heading) # if gear == 2 !!
+        
 
     def main(self):
         self.heading_decision()
-
+        self.true_heading()
         orientation = list(quaternion_from_euler(
             self.imu.roll, self.imu.pitch, self.heading))
 
         self.msg.x = self.gps.x
         self.msg.y = self.gps.y
         self.msg.hAcc = self.gps.hAcc
-        self.msg.speeed = self.dr.speed
+        # self.msg.speeed = self.dr.speed
+        self.msg.speeed = 0
+        self.msg.gspeed = self.gps.gspeed *0.0036 # [km/h]
         self.msg.dis = self.dr.pulse / 58.82
 
         if self.master_switch:
@@ -119,7 +138,7 @@ if __name__ == '__main__':
     basename_input = parser.parse_args().base_names
 
     if len(basename_input) == 0:
-        base_name = "KCity"
+        base_name = "Songdo" #"KCity"       
 
     elif len(basename_input) == 1:
         base_name = basename_input[0]
@@ -133,4 +152,5 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         loc.main()
         rate.sleep()
-    
+    if len(basename_input) == 0:
+        base_name = "Songdo" #"KCity"

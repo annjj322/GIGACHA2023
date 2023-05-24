@@ -28,6 +28,8 @@ class DR():
         self.right_switch = False
         self.right_init = 0
 
+        self.dead_right = 0.0
+
         # self.a = 0
         # self.b = 0
         # self.c = 0
@@ -39,9 +41,12 @@ class DR():
             self.right_switch = True
 
         self.right = msg.data - self.right_init
-
+        self.straight()
         self.filter()
         # self.dead_reck()
+    def straight(self):
+
+        self.dead_right = self.right *0.00843399 #*0.0084222 #encoder 200 : 1.705m
 
     def filter(self):
         if self.flag_filter:

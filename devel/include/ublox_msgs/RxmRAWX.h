@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -71,7 +71,7 @@ struct RxmRAWX_
    typedef boost::array<uint8_t, 2>  _reserved1_type;
   _reserved1_type reserved1;
 
-   typedef std::vector< ::ublox_msgs::RxmRAWX_Meas_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::RxmRAWX_Meas_<ContainerAllocator> >::other >  _meas_type;
+   typedef std::vector< ::ublox_msgs::RxmRAWX_Meas_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::RxmRAWX_Meas_<ContainerAllocator> >> _meas_type;
   _meas_type meas;
 
 

@@ -27,7 +27,7 @@ class MissionPlanner(threading.Thread):
                 elif self.shared.perception.signname == "parking":
                     self.plan.state = "parking"
                     
-                elif self.shared.perception.signname == "driving":
+                elif self.shared.perception.signname == "go":
                     self.plan.state = "go"
 
 

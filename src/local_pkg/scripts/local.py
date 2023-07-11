@@ -10,10 +10,10 @@ from ahrs import IMU
 from odometry import DR
 from local_functions import quaternion_from_euler
 from sig_int_handler import Activate_Signal_Interrupt_Handler
-from collections import deque
+
 
 class Localization():
-    def __init__(self, base):
+    def __init__(self, base): # subscriber, 변수
         rospy.init_node('Localization', anonymous=False)
         rospy.Subscriber("/vis_global_path", Path, self.masterCallback)
 
@@ -37,7 +37,7 @@ class Localization():
     def masterCallback(self, msg):
         self.master_switch = True
 
-    def heading_decision(self):
+    def heading_decision(self): # imu, gps 헤딩을 이용한 최종 헤딩 결정
         global time_sync
         main_time = time.time()
         time_sync = None
@@ -57,45 +57,26 @@ class Localization():
 
         else:
             self.heading = (self.imu.heading + self.offset)
-        
-        
-    def true_heading(self):
-        recent_heading = deque(maxlen=3)
-
-        recent_heading.append(self.heading)
-
-        heading_offset = 130
-        
-        last = recent_heading[0]
-        
-        if abs(last - self.heading) > heading_offset :
-            self.heading = last
-            recent_heading.append(last)
-        else :
-            recent_heading.append(self.heading) # if gear == 2 !!
-        
 
     def main(self):
-        self.heading_decision()
-        self.true_heading()
+        self.heading_decision() # 헤딩 계산
+
         orientation = list(quaternion_from_euler(
-            self.imu.roll, self.imu.pitch, self.heading))
+            self.imu.roll, self.imu.pitch, self.heading)) # roll, pitch, yaw 오일러 각을 쿼터니안 각으로 변환해 orientation 결정
 
         self.msg.x = self.gps.x
         self.msg.y = self.gps.y
         self.msg.hAcc = self.gps.hAcc
-        # self.msg.speeed = self.dr.speed
-        self.msg.speeed = 0
-        self.msg.gspeed = self.gps.gspeed *0.0036 # [km/h]
+        self.msg.speeed = self.dr.speed
         self.msg.dis = self.dr.pulse / 58.82
 
         if self.master_switch:
-            if 0 < self.gps.hAcc < 50:
+            if 0 < self.gps.hAcc < 50: # gps 정확도가 높으면 dead reckoning 수행 안하고 gps 값 참조
                 self.msg.dr_x = self.gps.x
                 self.msg.dr_y = self.gps.y
                 self.dr_init = False
 
-            else:
+            else: 
                 if not self.dr_init:
                     self.last_pulse = self.dr.pulse
                     self.dr_init = True
@@ -121,27 +102,27 @@ class Localization():
         self.msg.orientation.x = orientation[0]
         self.msg.orientation.y = orientation[1]
         self.msg.orientation.z = orientation[2]
-        self.msg.orientation.w = orientation[3]
+        self.msg.orientation.w = orientation[3] # 변수들에 최종값 담기
 
-        self.pub.publish(self.msg)
+        self.pub.publish(self.msg) # msg로 publish
 
         rospy.loginfo(self.msg)
         # rospy.loginfo(self.msg.heading)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # 실행
     Activate_Signal_Interrupt_Handler()
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser() # argument 받아 와 parsing(base 이름)
     parser.add_argument('--base', '-b', nargs='*',
                         help='base_names', default=[], dest='base_names')
     basename_input = parser.parse_args().base_names
 
     if len(basename_input) == 0:
-        base_name = "Songdo" #"KCity"       
+        base_name = "KCity"
 
     elif len(basename_input) == 1:
-        base_name = basename_input[0]
+        base_name = basename_input[0] # input 받아와 argument로 설정
 
     else:
         raise Exception('Invalid Arguments')
@@ -152,5 +133,3 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         loc.main()
         rate.sleep()
-    if len(basename_input) == 0:
-        base_name = "Songdo" #"KCity"

@@ -8,13 +8,14 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
 #include <ros/builtin_message_traits.h>
 #include <ros/message_operations.h>
 
+#include <std_msgs/Header.h>
 #include <geometry_msgs/Quaternion.h>
 
 namespace local_pkg
@@ -25,34 +26,73 @@ struct Local_
   typedef Local_<ContainerAllocator> Type;
 
   Local_()
-    : x(0.0)
+    : header()
+    , x(0.0)
     , y(0.0)
     , heading(0.0)
+    , imu_heading(0.0)
+    , gps_heading(0.0)
+    , gps_heading_under_4_headAcc(0.0)
     , roll(0.0)
     , pitch(0.0)
     , dr_x(0.0)
     , dr_y(0.0)
+    , dead_m(0.0)
+    , encoder_left(0)
+    , encoder_right(0)
+    , dead_right(0.0)
+    , distance(0.0)
+    , encoder_x(0.0)
+    , encoder_y(0.0)
     , hAcc(0)
+    , headAcc(0.0)
+    , gear(0)
     , speeed(0.0)
+    , gspeed(0.0)
     , dis(0.0)
-    , orientation()  {
+    , position_error_between_encoder_and_gps(0.0)
+    , orientation()
+    , distance_x(0.0)
+    , distance_y(0.0)
+    , distance_z(0.0)  {
     }
   Local_(const ContainerAllocator& _alloc)
-    : x(0.0)
+    : header(_alloc)
+    , x(0.0)
     , y(0.0)
     , heading(0.0)
+    , imu_heading(0.0)
+    , gps_heading(0.0)
+    , gps_heading_under_4_headAcc(0.0)
     , roll(0.0)
     , pitch(0.0)
     , dr_x(0.0)
     , dr_y(0.0)
+    , dead_m(0.0)
+    , encoder_left(0)
+    , encoder_right(0)
+    , dead_right(0.0)
+    , distance(0.0)
+    , encoder_x(0.0)
+    , encoder_y(0.0)
     , hAcc(0)
+    , headAcc(0.0)
+    , gear(0)
     , speeed(0.0)
+    , gspeed(0.0)
     , dis(0.0)
-    , orientation(_alloc)  {
+    , position_error_between_encoder_and_gps(0.0)
+    , orientation(_alloc)
+    , distance_x(0.0)
+    , distance_y(0.0)
+    , distance_z(0.0)  {
   (void)_alloc;
     }
 
 
+
+   typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
+  _header_type header;
 
    typedef double _x_type;
   _x_type x;
@@ -62,6 +102,15 @@ struct Local_
 
    typedef double _heading_type;
   _heading_type heading;
+
+   typedef double _imu_heading_type;
+  _imu_heading_type imu_heading;
+
+   typedef double _gps_heading_type;
+  _gps_heading_type gps_heading;
+
+   typedef double _gps_heading_under_4_headAcc_type;
+  _gps_heading_under_4_headAcc_type gps_heading_under_4_headAcc;
 
    typedef double _roll_type;
   _roll_type roll;
@@ -75,17 +124,59 @@ struct Local_
    typedef double _dr_y_type;
   _dr_y_type dr_y;
 
+   typedef double _dead_m_type;
+  _dead_m_type dead_m;
+
+   typedef int64_t _encoder_left_type;
+  _encoder_left_type encoder_left;
+
+   typedef int64_t _encoder_right_type;
+  _encoder_right_type encoder_right;
+
+   typedef double _dead_right_type;
+  _dead_right_type dead_right;
+
+   typedef double _distance_type;
+  _distance_type distance;
+
+   typedef double _encoder_x_type;
+  _encoder_x_type encoder_x;
+
+   typedef double _encoder_y_type;
+  _encoder_y_type encoder_y;
+
    typedef int64_t _hAcc_type;
   _hAcc_type hAcc;
+
+   typedef double _headAcc_type;
+  _headAcc_type headAcc;
+
+   typedef int64_t _gear_type;
+  _gear_type gear;
 
    typedef double _speeed_type;
   _speeed_type speeed;
 
+   typedef double _gspeed_type;
+  _gspeed_type gspeed;
+
    typedef double _dis_type;
   _dis_type dis;
 
+   typedef double _position_error_between_encoder_and_gps_type;
+  _position_error_between_encoder_and_gps_type position_error_between_encoder_and_gps;
+
    typedef  ::geometry_msgs::Quaternion_<ContainerAllocator>  _orientation_type;
   _orientation_type orientation;
+
+   typedef double _distance_x_type;
+  _distance_x_type distance_x;
+
+   typedef double _distance_y_type;
+  _distance_y_type distance_y;
+
+   typedef double _distance_z_type;
+  _distance_z_type distance_z;
 
 
 
@@ -116,17 +207,35 @@ return s;
 template<typename ContainerAllocator1, typename ContainerAllocator2>
 bool operator==(const ::local_pkg::Local_<ContainerAllocator1> & lhs, const ::local_pkg::Local_<ContainerAllocator2> & rhs)
 {
-  return lhs.x == rhs.x &&
+  return lhs.header == rhs.header &&
+    lhs.x == rhs.x &&
     lhs.y == rhs.y &&
     lhs.heading == rhs.heading &&
+    lhs.imu_heading == rhs.imu_heading &&
+    lhs.gps_heading == rhs.gps_heading &&
+    lhs.gps_heading_under_4_headAcc == rhs.gps_heading_under_4_headAcc &&
     lhs.roll == rhs.roll &&
     lhs.pitch == rhs.pitch &&
     lhs.dr_x == rhs.dr_x &&
     lhs.dr_y == rhs.dr_y &&
+    lhs.dead_m == rhs.dead_m &&
+    lhs.encoder_left == rhs.encoder_left &&
+    lhs.encoder_right == rhs.encoder_right &&
+    lhs.dead_right == rhs.dead_right &&
+    lhs.distance == rhs.distance &&
+    lhs.encoder_x == rhs.encoder_x &&
+    lhs.encoder_y == rhs.encoder_y &&
     lhs.hAcc == rhs.hAcc &&
+    lhs.headAcc == rhs.headAcc &&
+    lhs.gear == rhs.gear &&
     lhs.speeed == rhs.speeed &&
+    lhs.gspeed == rhs.gspeed &&
     lhs.dis == rhs.dis &&
-    lhs.orientation == rhs.orientation;
+    lhs.position_error_between_encoder_and_gps == rhs.position_error_between_encoder_and_gps &&
+    lhs.orientation == rhs.orientation &&
+    lhs.distance_x == rhs.distance_x &&
+    lhs.distance_y == rhs.distance_y &&
+    lhs.distance_z == rhs.distance_z;
 }
 
 template<typename ContainerAllocator1, typename ContainerAllocator2>
@@ -149,12 +258,12 @@ namespace message_traits
 
 template <class ContainerAllocator>
 struct IsFixedSize< ::local_pkg::Local_<ContainerAllocator> >
-  : TrueType
+  : FalseType
   { };
 
 template <class ContainerAllocator>
 struct IsFixedSize< ::local_pkg::Local_<ContainerAllocator> const>
-  : TrueType
+  : FalseType
   { };
 
 template <class ContainerAllocator>
@@ -169,12 +278,12 @@ struct IsMessage< ::local_pkg::Local_<ContainerAllocator> const>
 
 template <class ContainerAllocator>
 struct HasHeader< ::local_pkg::Local_<ContainerAllocator> >
-  : FalseType
+  : TrueType
   { };
 
 template <class ContainerAllocator>
 struct HasHeader< ::local_pkg::Local_<ContainerAllocator> const>
-  : FalseType
+  : TrueType
   { };
 
 
@@ -183,12 +292,12 @@ struct MD5Sum< ::local_pkg::Local_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "02900f6dd7ae8d0a3ed2e4e2d3c5c924";
+    return "c9625b1768e07229864bd2960c43b12d";
   }
 
   static const char* value(const ::local_pkg::Local_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x02900f6dd7ae8d0aULL;
-  static const uint64_t static_value2 = 0x3ed2e4e2d3c5c924ULL;
+  static const uint64_t static_value1 = 0xc9625b1768e07229ULL;
+  static const uint64_t static_value2 = 0x864bd2960c43b12dULL;
 };
 
 template<class ContainerAllocator>
@@ -207,17 +316,51 @@ struct Definition< ::local_pkg::Local_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "float64 x\n"
+    return "std_msgs/Header header\n"
+"float64 x\n"
 "float64 y\n"
 "float64 heading\n"
+"float64 imu_heading\n"
+"float64 gps_heading\n"
+"float64 gps_heading_under_4_headAcc\n"
 "float64 roll\n"
 "float64 pitch\n"
 "float64 dr_x\n"
 "float64 dr_y\n"
+"float64 dead_m\n"
+"int64 encoder_left\n"
+"int64 encoder_right\n"
+"float64 dead_right\n"
+"float64 distance\n"
+"float64 encoder_x\n"
+"float64 encoder_y\n"
 "int64 hAcc\n"
+"float64 headAcc\n"
+"int64 gear\n"
 "float64 speeed\n"
+"float64 gspeed\n"
 "float64 dis\n"
+"float64 position_error_between_encoder_and_gps\n"
 "geometry_msgs/Quaternion orientation\n"
+"float64 distance_x\n"
+"float64 distance_y\n"
+"float64 distance_z\n"
+"\n"
+"================================================================================\n"
+"MSG: std_msgs/Header\n"
+"# Standard metadata for higher-level stamped data types.\n"
+"# This is generally used to communicate timestamped data \n"
+"# in a particular coordinate frame.\n"
+"# \n"
+"# sequence ID: consecutively increasing ID \n"
+"uint32 seq\n"
+"#Two-integer timestamp that is expressed as:\n"
+"# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')\n"
+"# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')\n"
+"# time-handling sugar is provided by the client library\n"
+"time stamp\n"
+"#Frame this data is associated with\n"
+"string frame_id\n"
 "\n"
 "================================================================================\n"
 "MSG: geometry_msgs/Quaternion\n"
@@ -245,17 +388,35 @@ namespace serialization
   {
     template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
     {
+      stream.next(m.header);
       stream.next(m.x);
       stream.next(m.y);
       stream.next(m.heading);
+      stream.next(m.imu_heading);
+      stream.next(m.gps_heading);
+      stream.next(m.gps_heading_under_4_headAcc);
       stream.next(m.roll);
       stream.next(m.pitch);
       stream.next(m.dr_x);
       stream.next(m.dr_y);
+      stream.next(m.dead_m);
+      stream.next(m.encoder_left);
+      stream.next(m.encoder_right);
+      stream.next(m.dead_right);
+      stream.next(m.distance);
+      stream.next(m.encoder_x);
+      stream.next(m.encoder_y);
       stream.next(m.hAcc);
+      stream.next(m.headAcc);
+      stream.next(m.gear);
       stream.next(m.speeed);
+      stream.next(m.gspeed);
       stream.next(m.dis);
+      stream.next(m.position_error_between_encoder_and_gps);
       stream.next(m.orientation);
+      stream.next(m.distance_x);
+      stream.next(m.distance_y);
+      stream.next(m.distance_z);
     }
 
     ROS_DECLARE_ALLINONE_SERIALIZER
@@ -274,12 +435,21 @@ struct Printer< ::local_pkg::Local_<ContainerAllocator> >
 {
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::local_pkg::Local_<ContainerAllocator>& v)
   {
+    s << indent << "header: ";
+    s << std::endl;
+    Printer< ::std_msgs::Header_<ContainerAllocator> >::stream(s, indent + "  ", v.header);
     s << indent << "x: ";
     Printer<double>::stream(s, indent + "  ", v.x);
     s << indent << "y: ";
     Printer<double>::stream(s, indent + "  ", v.y);
     s << indent << "heading: ";
     Printer<double>::stream(s, indent + "  ", v.heading);
+    s << indent << "imu_heading: ";
+    Printer<double>::stream(s, indent + "  ", v.imu_heading);
+    s << indent << "gps_heading: ";
+    Printer<double>::stream(s, indent + "  ", v.gps_heading);
+    s << indent << "gps_heading_under_4_headAcc: ";
+    Printer<double>::stream(s, indent + "  ", v.gps_heading_under_4_headAcc);
     s << indent << "roll: ";
     Printer<double>::stream(s, indent + "  ", v.roll);
     s << indent << "pitch: ";
@@ -288,15 +458,43 @@ struct Printer< ::local_pkg::Local_<ContainerAllocator> >
     Printer<double>::stream(s, indent + "  ", v.dr_x);
     s << indent << "dr_y: ";
     Printer<double>::stream(s, indent + "  ", v.dr_y);
+    s << indent << "dead_m: ";
+    Printer<double>::stream(s, indent + "  ", v.dead_m);
+    s << indent << "encoder_left: ";
+    Printer<int64_t>::stream(s, indent + "  ", v.encoder_left);
+    s << indent << "encoder_right: ";
+    Printer<int64_t>::stream(s, indent + "  ", v.encoder_right);
+    s << indent << "dead_right: ";
+    Printer<double>::stream(s, indent + "  ", v.dead_right);
+    s << indent << "distance: ";
+    Printer<double>::stream(s, indent + "  ", v.distance);
+    s << indent << "encoder_x: ";
+    Printer<double>::stream(s, indent + "  ", v.encoder_x);
+    s << indent << "encoder_y: ";
+    Printer<double>::stream(s, indent + "  ", v.encoder_y);
     s << indent << "hAcc: ";
     Printer<int64_t>::stream(s, indent + "  ", v.hAcc);
+    s << indent << "headAcc: ";
+    Printer<double>::stream(s, indent + "  ", v.headAcc);
+    s << indent << "gear: ";
+    Printer<int64_t>::stream(s, indent + "  ", v.gear);
     s << indent << "speeed: ";
     Printer<double>::stream(s, indent + "  ", v.speeed);
+    s << indent << "gspeed: ";
+    Printer<double>::stream(s, indent + "  ", v.gspeed);
     s << indent << "dis: ";
     Printer<double>::stream(s, indent + "  ", v.dis);
+    s << indent << "position_error_between_encoder_and_gps: ";
+    Printer<double>::stream(s, indent + "  ", v.position_error_between_encoder_and_gps);
     s << indent << "orientation: ";
     s << std::endl;
     Printer< ::geometry_msgs::Quaternion_<ContainerAllocator> >::stream(s, indent + "  ", v.orientation);
+    s << indent << "distance_x: ";
+    Printer<double>::stream(s, indent + "  ", v.distance_x);
+    s << indent << "distance_y: ";
+    Printer<double>::stream(s, indent + "  ", v.distance_y);
+    s << indent << "distance_z: ";
+    Printer<double>::stream(s, indent + "  ", v.distance_z);
   }
 };
 

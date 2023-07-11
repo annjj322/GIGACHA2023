@@ -2,7 +2,7 @@ import csv
 import rospy
 from local_pkg.msg import Local
 
-csv_file = '7_1.csv'
+csv_file = '1.csv'
 
 csv_header = ['gps_heading']
 #csv_header = ['time','heading','gps_heading','speeed','gspeed','gear','headAcc']

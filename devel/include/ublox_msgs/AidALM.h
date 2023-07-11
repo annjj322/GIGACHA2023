@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -43,7 +43,7 @@ struct AidALM_
    typedef uint32_t _week_type;
   _week_type week;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _dwrd_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _dwrd_type;
   _dwrd_type dwrd;
 
 

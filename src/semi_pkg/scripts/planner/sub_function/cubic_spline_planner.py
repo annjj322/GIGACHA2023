@@ -30,10 +30,14 @@ class Spline:
         A = self.__calc_A(h)
         B = self.__calc_B(h)
         self.c = np.linalg.solve(A, B)
-        #  print(self.c1)
 
         # calc spline coefficient b and d
+        
         for i in range(self.nx - 1):
+            # print("x:", self.x)
+            # print("h[i]:",h[i])
+            if h[i] == 0:
+                continue
             self.d.append((self.c[i + 1] - self.c[i]) / (3.0 * h[i]))
             tb = (self.a[i + 1] - self.a[i]) / h[i] - h[i] * \
                 (self.c[i + 1] + 2.0 * self.c[i]) / 3.0
@@ -234,5 +238,5 @@ def main(x,y):  # pragma: no cover
     # plt.show()
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

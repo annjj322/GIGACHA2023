@@ -15,43 +15,26 @@ class Parking_Motion_LJY():
         self.global_path = self.shared.global_path
         self.parking = self.shared.park
 
-        # simul kcity
-        self.base_lat = 37.23873
-        self.base_lon = 126.772383333333
-        self.base_alt = 15.4
-        with open('/home/gigacha/TEAM-GIGACHA/src/semi_pkg/scripts/planner/sub_function/parking_JSON/parking_KCity.json') as pkc:
-            self.parking_point = json.load(pkc)
-        self.direction = -1
-
-        # #siheung
-        # self.base_lat = 37.36458356
-        # self.base_lon = 126.7237789
-        # self.base_alt = 15.4
-        # with open('/home/gigacha/TEAM-GIGACHA/src/final_pkg/scripts/planner/sub_function/parking_JSON/parking_siheung.json') as pkc:
-        #     self.parking_point = json.load(pkc)
-        # self.direction = 1
-
-        self.tmp_forward_path = Path()
-        self.list_radius = [7, 9, 7, 8, 7, 8]
-        self.smooth_radius = 0
-        self.cnt = False
+        self.L = 1.04
+        self.R = self.L/sin(radians(27))
+        self.d = sqrt((self.ego[0] - self.middlepoint[0])**2 + (self.ego[1] - self.middlepoint[1])**2)
 
 ##########################################################
         self.path_storage_x = []
         self.path_storage_y = []
 ##########################################################
-        self.Ledgedata = [64.6268, 42.5435]
-        self.Redgedata = [65.5141, 40.1389]
+        self.Ledgedata = [69.95, 52.16]
+        self.Redgedata = [70.98, 54.38]
         self.middlepoint = [(self.Ledgedata[0] + self.Redgedata[0])/2,(self.Ledgedata[1] + self.Redgedata[1])/2]
         dest_x, dest_y = self.find_destination()
         self.destination = [dest_x, dest_y]
 
     def find_contact(self):
         # find global line
-        xs = self.global_path.x[100]
-        ys = self.global_path.y[100]
-        xf = self.global_path.x[500]
-        yf = self.global_path.y[500]
+        xs = self.global_path.x[self.shared.ego.index - 10]
+        ys = self.global_path.y[self.shared.ego.index - 10]
+        xf = self.global_path.x[self.shared.ego.index + 10]
+        yf = self.global_path.y[self.shared.ego.index + 10]
         global_inclination = (ys - yf)/(xs - xf)
         global_intercept = -global_inclination*xs + ys
 
@@ -69,6 +52,11 @@ class Parking_Motion_LJY():
     def find_destination(self):
         pl_inclination = (self.Ledgedata[1] - self.Redgedata[1])/(self.Ledgedata[0] - self.Redgedata[0])
         vertical_inclination = -1/pl_inclination
+        vertical_inclination_angle = degrees(atan2(vertical_inclination,1))
+
+        if vertical_inclination_angle < 0:
+            vertical_inclination_angle += 180
+            vertical_inclination_angle %= 360
 
         dest_x = self.middlepoint[0] + 2.6/(sqrt(vertical_inclination**2+1))
         dest_y = self.middlepoint[1] + 2.6*vertical_inclination/(sqrt(vertical_inclination**2+1))
@@ -85,25 +73,78 @@ class Parking_Motion_LJY():
         return ind
 
     def making_forward_path(self):
-        ind1 = self.nearest_index(self.ego.x, self.ego.y)
-        cont_x, cont_y = self.find_contact()
-        ind2 = self.nearest_index(cont_x, cont_y)
+        # ind1 = self.nearest_index(self.ego.x, self.ego.y)
+        # cont_x, cont_y = self.find_contact()
+        # ind2 = self.nearest_index(cont_x, cont_y)
+        
+        # print("ind1: ", ind1)
+        # print("ind2: ", ind2)
 
-        parking_path_x = [self.global_path.x[ind1], self.global_path.x[ind2-21], self.global_path.x[ind2-20], self.middlepoint[0], self.destination[0]]
-        parking_path_y = [self.global_path.y[ind1], self.global_path.y[ind2-21], self.global_path.y[ind2-20], self.middlepoint[1], self.destination[1]]
-        # parking_path_x = [self.global_path.x[ind2], self.middlepoint[0], self.destination[0]]
-        # parking_path_y = [self.global_path.y[ind2], self.middlepoint[1], self.destination[1]]
-        # parking_path_x = [self.global_path.x[ind1], self.global_path.x[ind1+1], self.middlepoint[0], self.destination[0]]
-        # parking_path_y = [self.global_path.y[ind1], self.global_path.y[ind1+1], self.middlepoint[1], self.destination[1]]
+        # parking_sub_x = [self.middlepoint[0], self.destination[0]]
+        # parking_sub_y = [self.middlepoint[1], self.destination[1]]
 
-        # parking_space_x = [64.6268, 69.2112, 70.2465, 65.5141, 64.6268]
-        # parking_space_y = [42.5435, 44.3932, 41.9886, 40.1389, 42.5435]
+        # sx, sy, syaw, sk, ss = calc_spline_course(parking_sub_x, parking_sub_y, ds = 0.01)
 
-        cx, cy, cyaw, ck, s = calc_spline_course(parking_path_x, parking_path_y, ds = 0.1)
+        # if ind1 < ind2-21:
+        #     parking_path_x = [self.global_path.x[ind1], self.global_path.x[ind1+1], self.global_path.x[ind2-41], \
+        #                 self.global_path.x[ind2-40], self.middlepoint[0], sx[1], sx[-2], sx[-1]]
+        #     parking_path_y = [self.global_path.y[ind1], self.global_path.y[ind1+1], self.global_path.y[ind2-41], \
+        #                 self.global_path.y[ind2-40], self.middlepoint[1], sy[1], sy[-2], sy[-1]]
+        # else:
+        #     parking_path_x = [self.global_path.x[ind1], self.global_path.x[ind1+1], \
+        #                 self.middlepoint[0], sx[1], sx[-2], sx[-1]]
+        #     parking_path_y = [self.global_path.y[ind1], self.global_path.y[ind1+1], \
+        #                 self.middlepoint[1], sy[1], sy[-2], sy[-1]]
 
-        self.path_storage_x, self.path_storage_y = cx, cy
+        # cx, cy, cyaw, ck, s = calc_spline_course(parking_path_x, parking_path_y, ds = 0.01)
 
-        self.global_path.x, self.global_path.y = cx, cy
+        # self.path_storage_x, self.path_storage_y = cx, cy
+
+        # self.global_path.x, self.global_path.y = cx, cy
+
+          
+        # ind1 = self.nearest_index(self.ego.x, self.ego.y)
+
+        if self.d < self.R*(1-cos(self.find_inclination(self.Ledgedata, self.Redgedata))):
+            vectO_size = abs(sqrt((self.Redgedata[0]-self.Ledgedata[0])**2 + (self.Redgedata[1]-self.Ledgedata[1])**2))
+            vectO = [(self.Redgedata[0]-self.Ledgedata[0])/vectO_size, (self.Redgedata[1]-self.Ledgedata[1])/vectO_size] # 단위 벡터
+            pO = [self.middlepoint[0]+self.R*vectO[0], self.middlepoint[1]+self.R*vectO[1]]
+
+            xs = self.global_path.x[self.shared.ego.index - 10]
+            ys = self.global_path.y[self.shared.ego.index - 10]
+            xf = self.global_path.x[self.shared.ego.index + 10]
+            yf = self.global_path.y[self.shared.ego.index + 10]
+            a1 = (ys - yf)/(xs - xf)
+            b1 = -a1*xs + ys
+
+            # find vertical line
+            a2 = -1/a1
+            b2 = -a2*pO[0] + pO[1]
+
+            # find contact point
+            cont_x = (b2 - b1)/(a1 - a2)
+            cont_y = a1*cont_x + b1
+
+            # find vector
+            vect1_size = abs(sqrt((cont_x - pO[0])**2 + (cont_y - pO[1])**2))
+            vect1 = [(cont_x - pO[0])/vect1_size, (cont_y - pO[1])/vect1_size] # 단위 벡터
+            
+            start_point = [pO[0]+self.R*vectO[0], pO[1]+self.R*vectO[1]]
+            
+
+    def find_inclination(self, p1, p2):
+
+        inclination = (p1[1] - p2[1])/(p1[0] - p2[0])
+
+        inclination_angle = degrees(atan2(inclination,1))
+
+        if inclination_angle < 0:
+            inclination_angle += 180
+            inclination_angle %= 360
+
+        return inclination_angle
+
+        
 
     def making_reverse_forward_path(self):
         self.global_path.x, self.global_path.y = list(reversed(self.path_storage_x)), list(reversed(self.path_storage_y))  
@@ -113,8 +154,8 @@ class Parking_Motion_LJY():
         cont_x, cont_y = self.find_contact()
         ind2 = self.nearest_index(cont_x, cont_y)
 
-        backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2 - 100]]
-        backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2 - 100]]
+        backward_path_x = [self.global_path.x[ind1], self.global_path.x[ind2 - 200]]
+        backward_path_y = [self.global_path.y[ind1], self.global_path.y[ind2 - 200]]
         
         cx, cy, cyaw, ck, s = calc_spline_course(backward_path_x, backward_path_y, ds = 0.1)
         

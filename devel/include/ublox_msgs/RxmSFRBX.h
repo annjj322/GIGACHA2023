@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -73,7 +73,7 @@ struct RxmSFRBX_
    typedef uint8_t _reserved1_type;
   _reserved1_type reserved1;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _dwrd_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _dwrd_type;
   _dwrd_type dwrd;
 
 

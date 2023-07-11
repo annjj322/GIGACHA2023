@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -34,7 +34,7 @@ struct CfgINF_
 
 
 
-   typedef std::vector< ::ublox_msgs::CfgINF_Block_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::CfgINF_Block_<ContainerAllocator> >::other >  _blocks_type;
+   typedef std::vector< ::ublox_msgs::CfgINF_Block_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::CfgINF_Block_<ContainerAllocator> >> _blocks_type;
   _blocks_type blocks;
 
 

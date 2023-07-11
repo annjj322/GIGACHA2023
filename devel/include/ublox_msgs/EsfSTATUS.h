@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -70,7 +70,7 @@ struct EsfSTATUS_
    typedef uint8_t _numSens_type;
   _numSens_type numSens;
 
-   typedef std::vector< ::ublox_msgs::EsfSTATUS_Sens_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::EsfSTATUS_Sens_<ContainerAllocator> >::other >  _sens_type;
+   typedef std::vector< ::ublox_msgs::EsfSTATUS_Sens_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::EsfSTATUS_Sens_<ContainerAllocator> >> _sens_type;
   _sens_type sens;
 
 

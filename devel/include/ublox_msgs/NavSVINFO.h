@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -54,7 +54,7 @@ struct NavSVINFO_
    typedef uint16_t _reserved2_type;
   _reserved2_type reserved2;
 
-   typedef std::vector< ::ublox_msgs::NavSVINFO_SV_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::NavSVINFO_SV_<ContainerAllocator> >::other >  _sv_type;
+   typedef std::vector< ::ublox_msgs::NavSVINFO_SV_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::NavSVINFO_SV_<ContainerAllocator> >> _sv_type;
   _sv_type sv;
 
 

@@ -1,11 +1,16 @@
 import rospy
 from std_msgs.msg import Int64
 from local_pkg.msg import Serial_Info
+from local_pkg.msg import Local
+import math
+from collections import deque 
+import numpy as np
 
 class DR():
     def __init__(self):
         rospy.Subscriber('/Displacement_right', Int64, self.encoderCallback)
-        rospy.Subscriber('/serial', Serial_Info, self.serialTopulse_by_control_planning)
+        rospy.Subscriber('/serial', Serial_Info, self.serialTopulse)
+        rospy.Subscriber('/local_msgs', Local, self.calculate_position_with_encoder)
 
         self.right = 0  # pulse from sensor
         self.left = 0  # pulse from serial
@@ -30,10 +35,21 @@ class DR():
 
         self.dead_right = 0.0
 
-        # self.a = 0
-        # self.b = 0
-        # self.c = 0
-        # self.d = 0
+        #calculate position
+        self.x_prev = None
+        self.y_prev = None
+        self.dead_right_prev = None
+        self.distance = 0.0
+
+        
+        self.encoder_x = 0.0
+        self.encoder_y = 0.0
+
+        #deque
+        self.x_deque = deque(maxlen=10)
+        self.y_deque = deque(maxlen=10)
+        self.dead_right_deque = deque(maxlen=10)
+
 
     def encoderCallback(self, msg):
         if self.right_switch == False:
@@ -44,9 +60,37 @@ class DR():
         self.straight()
         self.filter()
         # self.dead_reck()
+           
     def straight(self):
 
-        self.dead_right = self.right *0.00843399 #*0.0084222 #encoder 200 : 1.705m
+        self.dead_right = self.right *0.00842969 # encoder 1 : 0.00842969m
+
+    def calculate_position_with_encoder(self,data):
+        x = data.x
+        y = data.y
+        heading = data.heading
+
+        if data.hAcc < 15 and abs(self.right) <100 : 
+            self.encoder_x = x
+            self.encoder_y = y
+        
+        if self.gear == 2 :
+            heading = (data.heading - 180)% 360            
+        
+        if self.dead_right_prev is not None :
+            self.x_deque.append(abs(self.dead_right - self.dead_right_prev) * math.cos(math.radians(heading)) )
+            self.y_deque.append(abs(self.dead_right - self.dead_right_prev) * math.sin(math.radians(heading)) )
+            self.encoder_x += np.mean(self.x_deque)
+            self.encoder_y += np.mean(self.y_deque)
+
+        if self.x_prev is not None and self.y_prev is not None and self.right != 0:
+                segment_distance = math.sqrt((x-self.x_prev)**2+(y-self.y_prev)**2)
+                self.distance += round(segment_distance,2)
+        
+        self.dead_right_deque.append(self.dead_right)
+        self.x_prev = x
+        self.y_prev = y
+        self.dead_right_prev = self.dead_right #np.mean(self.dead_right_deque)
 
     def filter(self):
         if self.flag_filter:
@@ -106,17 +150,17 @@ class DR():
     def serialTopulse(self, data):
         self.gear = data.gear
         self.speed = data.speed
-        left_pulse = int(data.encoder[0]) + int(data.encoder[1])*256 \
-            + int(data.encoder[2])*256**2 + \
-            int(data.encoder[3])*256**3
+        self.left_pulse = 126 # int(data.encoder[0]) + int(data.encoder[1])*256 \
+            #+ int(data.en1oder[2])*256**2 + \
+            #int(data.encoder[3])*256**3
 
         # if 0 <= left_pulse <= 255:
         #     left_pulse = 256**4 - 1 + left_pulse
 
         if self.init == 0:
-            self.init = left_pulse
+            self.init = self.left_pulse
 
-        self.left = left_pulse - self.init
+        self.left = self.left_pulse - self.init
 
 
 if __name__ == '__main__':

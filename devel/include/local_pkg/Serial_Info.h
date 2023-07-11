@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -63,7 +63,7 @@ struct Serial_Info_
    typedef int32_t _brake_type;
   _brake_type brake;
 
-   typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _encoder_type;
+   typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double>> _encoder_type;
   _encoder_type encoder;
 
 

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-csv_file = 's_3_xy.csv'
+csv_file = '1.csv'
 data_frame = pd.read_csv(csv_file)
 
 x = data_frame['x']

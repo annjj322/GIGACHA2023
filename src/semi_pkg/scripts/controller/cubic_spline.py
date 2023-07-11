@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-u"""
+"""
 Cubic Spline library on python
 
 author Atsushi Sakai

@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -47,13 +47,13 @@ struct AidEPH_
    typedef uint32_t _how_type;
   _how_type how;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _sf1d_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _sf1d_type;
   _sf1d_type sf1d;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _sf2d_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _sf2d_type;
   _sf2d_type sf2d;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _sf3d_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _sf3d_type;
   _sf3d_type sf3d;
 
 

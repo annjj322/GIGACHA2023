@@ -72,6 +72,7 @@ local_pkg/CMakeFiles/local_pkg_generate_messages_py: /home/gigacha/TEAM-GIGACHA/
 /home/gigacha/TEAM-GIGACHA/devel/lib/python2.7/dist-packages/local_pkg/msg/_Local.py: /opt/ros/melodic/lib/genpy/genmsg_py.py
 /home/gigacha/TEAM-GIGACHA/devel/lib/python2.7/dist-packages/local_pkg/msg/_Local.py: /home/gigacha/TEAM-GIGACHA/src/local_pkg/msg/Local.msg
 /home/gigacha/TEAM-GIGACHA/devel/lib/python2.7/dist-packages/local_pkg/msg/_Local.py: /opt/ros/melodic/share/geometry_msgs/msg/Quaternion.msg
+/home/gigacha/TEAM-GIGACHA/devel/lib/python2.7/dist-packages/local_pkg/msg/_Local.py: /opt/ros/melodic/share/std_msgs/msg/Header.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/gigacha/TEAM-GIGACHA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating Python from MSG local_pkg/Local"
 	cd /home/gigacha/TEAM-GIGACHA/build/local_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/gigacha/TEAM-GIGACHA/src/local_pkg/msg/Local.msg -Ilocal_pkg:/home/gigacha/TEAM-GIGACHA/src/local_pkg/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/melodic/share/geometry_msgs/cmake/../msg -Ilocal_pkg:/home/gigacha/TEAM-GIGACHA/src/local_pkg/msg -p local_pkg -o /home/gigacha/TEAM-GIGACHA/devel/lib/python2.7/dist-packages/local_pkg/msg
 

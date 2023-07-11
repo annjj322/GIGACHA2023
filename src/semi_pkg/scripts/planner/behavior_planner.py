@@ -2,8 +2,6 @@
 import threading
 from time import sleep
 from .sub_function.mission import Mission
-from .sub_function.parking_diagonal_lidar import PL
-
 class BehaviorPlanner(threading.Thread):
     def __init__(self, parent, rate):
         super().__init__()
@@ -15,20 +13,18 @@ class BehaviorPlanner(threading.Thread):
         self.plan = self.shared.plan
 
         self.mission = Mission(self.shared, self.ego, self.perception, self.plan)
-
-        self.pl = PL(self.ego)
         
     def run(self):
         while True:
             try:
-                self.mission.convert_lidar()
-
                 if self.plan.state == "go":
                     self.mission.go()
 
                 elif self.plan.state == "parking":
-                    #self.mission.Parking_KCity_diagonal_LJY()
-                    self.mission.Parking_KCity_parallel_hy_test()
+                    
+                    # self.mission.Parking_KCity_diagonal_LJY()
+                    # self.mission.Parking_KCity_parallel_hy()
+                    self.mission.parking_parallel_jm()
                 
                 elif self.plan.state == "static_obstacle_detected":
                     self.mission.static_obstacle()

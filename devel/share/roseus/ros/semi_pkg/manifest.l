@@ -6,7 +6,6 @@
 ;; USING /opt/ros/melodic/lib/python2.7/dist-packages/geneus/geneus_main.pyc /opt/ros/melodic/share/geneus/package.xml (2.2.6)
 ;;
 (ros::load-ros-package "actionlib_msgs")
-(ros::load-ros-package "final_pkg")
 (ros::load-ros-package "geometry_msgs")
 (ros::load-ros-package "local_pkg")
 (ros::load-ros-package "nav_msgs")

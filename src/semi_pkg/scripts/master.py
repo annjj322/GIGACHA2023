@@ -23,7 +23,7 @@ class Master(threading.Thread):
     def run(self):
         self.shared = Shared()
 
-        self.localizer = Localizer(self, rate=50)
+        self.localizer = Localizer(self, rate=10)
         self.init_thread(self.localizer)
 
         self.mission_planner = MissionPlanner(self, rate=10)
@@ -32,38 +32,34 @@ class Master(threading.Thread):
         self.behavior_planner = BehaviorPlanner(self, rate=10)
         self.init_thread(self.behavior_planner)
 
-        self.motion_planner = MotionPlanner(self, rate=20)
+        self.motion_planner = MotionPlanner(self, rate=10)
         self.init_thread(self.motion_planner)
 
-        self.controller = Controller(self, rate=20)
+        self.controller = Controller(self, rate=10)
         self.init_thread(self.controller)
 
         self.visualizer = Visualizer(self, rate=10)
         self.init_thread(self.visualizer)
 
         while True:
-            print("---------------------")
-            # # print('Localization')
-
-            print('x : {0:.2f}, y : {1:.2f}, index : {2}, \nheading : {3:.2f}'\
-               .format(self.shared.ego.x, self.shared.ego.y, self.shared.ego.index, self.shared.ego.heading))
-            print('Mission_State : {}'.format(self.shared.plan.state))
-            print('Sign_name : {}'.format(self.shared.perception.signname))
-            print('Behavior_Decision : {}'.format(self.shared.plan.behavior_decision))
-
-            print('Motion_Selected lane : {}'.format(self.shared.selected_lane + 1))
-            # print('Controller')
-            print('Speed : {}, Steer : {:.2f}'.format(self.shared.ego.input_speed, self.shared.ego.input_steer))
-            # print('Speed : {},'.format(self.shared.ego.speed))
-
+            # print('-------------------------------------\nShared.plan_state : {} | Input speed : {}\nTarget speed : {:.2f} | Steer : {:.2f} \n Target index : {} | Lookahead : {}\nIndex : {} | Heading : {}'.format(
+                    # self.shared.plan.state, 
+                    # self.shared.ego.input_speed,
+                    # self.shared.ego.target_speed, 
+                    # self.shared.ego.input_steer, 
+                    # self.controller.lat_controller.target_index,
+                    # self.controller.lat_controller.lookahead,
+                    # self.shared.ego.index,
+                    # self.shared.ego.heading))
+            # print('ego_brake',self.shared.ego.input_brake)
+            print('index :{} | heading :{}'.format(self.shared.ego.index, round(self.shared.ego.heading,3)))
             self.checker_all()
-            # # print("running master")
 
             sleep(self.period)
 
     def init_thread(self, module):
-        module.daemon = True
-        module.start()
+        module.daemon = True # daemon 쓰레드로 설정
+        module.start() # module.run() 실행
 
     def checker_all(self):
         self.thread_checker(self.localizer)
@@ -84,8 +80,12 @@ if __name__ == "__main__":
     )
     argparser.add_argument(
         '--map',
-        default='kcity_simul/semi_map',
-        help='kcity/map1, songdo/map2, yonghyeon/Yonghyeon, kcity_simul/left_lane, kcity_simul/right_lane, kcity_simul/final, inha_parking/gpp, kcity_simul/semi_map'
+        
+        # default='kcity_simul/semi_map_driving', # lattice planning
+        default='kcity_simul/semi_map_parking', # parking
+        # default='kcity_simul/semi_map_driving',
+        # default='kcity_simul/parallelpark_map', # parking2
+        help='kcity/map1, songdo/map2, yonghyeon/Yonghyeon, kcity_simul/left_lane, kcity_simul/right_lane, kcity_simul/final, inha_parking/gpp, kcity_simul/semi_map, kcity_simul/parallelpark'
     )
 
     ActivateSignalInterruptHandler()

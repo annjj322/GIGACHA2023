@@ -1,104 +1,51 @@
-from math import hypot, cos, sin, degrees, atan2, radians, pi, sqrt
-from numpy import gradient
+from math import sin, degrees, atan2, radians, cos
+from numpy import clip
+from time import sleep
 class LatController():
-    def __init__(self, eg, sh, lattice, pl, park):
- 
+    def __init__(self, eg, sh, pl, park):
         self.ego = eg
         self.shared = sh
         self.plan = pl
         self.parking = park
-        self.lattice_path = lattice
-
         self.global_path = self.shared.global_path
         self.WB = 1.04 # wheel base
-        self.k = 0.15 #1.5
-        self.lookahead_default = 4 #look-ahead default
-
+        self.lookahead = 3
+        self.target_index = self.ego.index+self.lookahead
+   
     def run(self):
         while True:
             try:
-                if self.parking.on == "on":
-                    self.parking_run()
-                elif self.parking.on == "forced":
-                    self.parking_run2()
-                elif self.parking.on == "U_turn":
-                    self.U_turn()
-                elif self.parking.on == "off":
-                    self.Pure_pursuit()
-
-                return self.steer
-
+                return self.Pure_pursuit()
             except IndexError:
+                # sleep(1)
                 print("++++++++lat_controller+++++++++")
 
-    def parking_run(self):
-        if self.parking.direction == 0:
-            self.path = self.parking.forward_path
-            lookahead = 5
-        else:
-            self.path = self.parking.backward_path
-            lookahead = 5
-        # if not self.parking.inflection_on:
-        target_index = lookahead + self.parking.index
-        # else:
-        #     target_index = len(self.parking.backward_path.x) - 1
-
-        target_x, target_y = self.path.x[target_index], self.path.y[target_index]
-        tmp = degrees(atan2(target_y - self.ego.y, target_x - self.ego.x)) % 360
-
+    def Pure_pursuit(self, lookahead=None):
         heading = self.ego.heading
-        ###### Back Driving ######
-        if self.ego.target_gear == 2:
-            heading += 180
-            heading %= 360
-        ##########################
+        x = self.ego.x
+        y = self.ego.y
 
-        alpha = heading - tmp
-        angle = atan2(2.0 * self.WB *
-                      sin(radians(alpha)) / lookahead, 1.0)
+        self.path = self.shared.global_path
 
-        ###### Back Driving ######
-        if self.ego.target_gear == 2:
-            angle = -1.5*angle
-        ##########################
+        # self.lookahead decision  
+        if lookahead == None:  
+            if self.ego.target_gear == 2:
+                self.lookahead = int(clip((9*self.ego.target_speed-120), 18, 60))
+            else:
+                self.lookahead = int(clip((9*self.ego.target_speed-120), 24, 60))
+        else:
+            self.lookahead = lookahead
 
-        if degrees(angle) < 3.5 and degrees(angle) > -3.5:
-            angle = 0
-
-        self.steer = max(min(degrees(angle), 27.0), -27.0)
-
-    def parking_run2(self):
-        self.steer = self.ego.target_steer
-
-    def Pure_pursuit(self): # look ahead -> lattice 상의 cut_path에서 정하는 것으로
-        self.path = self.lattice_path[self.shared.selected_lane]
-        # print(len(self.lattice_path), "\n", self.shared.selected_lane)
-        # self.path = self.shared.global_path
-        lookahead = min(self.k * self.ego.speed +
-                        self.lookahead_default, 6)
-        target_index = len(self.path.x) - 49
-        R2=sqrt(lookahead)/(2*abs(self.ego.x-self.path.x[target_index]))#퓨어퍼싯 기준 곡률반경계산 1이 넘을경우 곡선?
+        self.target_index = self.ego.index + min(self.lookahead, len(self.path.x)-1)
+        if self.target_index >= len(self.global_path.x)-1:
+            self.target_index = len(self.global_path.x)-1
+            
+        target_x, target_y = self.path.x[self.target_index], self.path.y[self.target_index]
+        tmp = degrees(atan2(target_y - y, target_x - x)) % 360
+        alpha = tmp - heading
+        angle = atan2(2.0 * self.WB * sin(radians(alpha)), self.lookahead/6)
+        tmp_steer = degrees(angle) 
         
-        # print(target_index)
+        self.steer = float(clip(-tmp_steer, -27.0, 27.0))
 
-        # lookahead = min(self.k * self.ego.speed + self.lookahead_default, 7)
-        # target_index = int(lookahead * 10)
-
-        target_x, target_y = self.path.x[target_index], self.path.y[target_index]
-        tmp = degrees(atan2(target_y - self.ego.y,
-                            target_x - self.ego.x)) % 360
-
-
-        alpha = self.ego.heading - tmp
-        angle = atan2(2.0 * self.WB * sin(radians(alpha)) / lookahead, 1.0)
-        if degrees(angle) < 0.5 and degrees(angle) > -0.5:
-            angle = 0
-        tmp_steer = degrees(angle) # * 1.1 후진시에 의도적인 over steer
-        if abs(tmp_steer) > 5: # [degree] 곡선 부드럽게 하는 코드
-            tmp_steer *= 0.8
-
-        self.steer = max(min(tmp_steer, 27.0), -27.0) 
         return self.steer
-    
-    # def normailizer(self):
- 

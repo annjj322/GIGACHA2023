@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -54,16 +54,16 @@ struct Perception_
    typedef double _A_objy_type;
   _A_objy_type A_objy;
 
-   typedef std::vector<int64_t, typename ContainerAllocator::template rebind<int64_t>::other >  _bbox_size_type;
+   typedef std::vector<int64_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int64_t>> _bbox_size_type;
   _bbox_size_type bbox_size;
 
-   typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _B_target_x_type;
+   typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double>> _B_target_x_type;
   _B_target_x_type B_target_x;
 
-   typedef std::vector<double, typename ContainerAllocator::template rebind<double>::other >  _B_target_y_type;
+   typedef std::vector<double, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<double>> _B_target_y_type;
   _B_target_y_type B_target_y;
 
-   typedef std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other >  _signname_type;
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _signname_type;
   _signname_type signname;
 
 
@@ -259,7 +259,7 @@ struct Printer< ::semi_pkg::Perception_<ContainerAllocator> >
       Printer<double>::stream(s, indent + "  ", v.B_target_y[i]);
     }
     s << indent << "signname: ";
-    Printer<std::basic_string<char, std::char_traits<char>, typename ContainerAllocator::template rebind<char>::other > >::stream(s, indent + "  ", v.signname);
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.signname);
   }
 };
 

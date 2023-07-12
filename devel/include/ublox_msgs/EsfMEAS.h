@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -50,10 +50,10 @@ struct EsfMEAS_
    typedef uint16_t _id_type;
   _id_type id;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _data_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _data_type;
   _data_type data;
 
-   typedef std::vector<uint32_t, typename ContainerAllocator::template rebind<uint32_t>::other >  _calibTtag_type;
+   typedef std::vector<uint32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint32_t>> _calibTtag_type;
   _calibTtag_type calibTtag;
 
 

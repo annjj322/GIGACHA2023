@@ -14,10 +14,12 @@ class GPS():
         rospy.Subscriber("/simul_gps", Pose, self.gps_call_back_simul)
 
         self.base_name = base_name
-
+        # junmyeong
+        self.gspeed = 0
         self.x = 0.0
         self.y = 0.0
         self.heading = 0.0
+        self.gps_heading = 0.0
         self.hAcc = 0
         self.heading_switch = False
 
@@ -53,6 +55,7 @@ class GPS():
         if headAcc < 400000:
             self.heading_switch = True
             self.heading = gps_heading
+            self.gps_heading = gps_heading
         else:
             self.heading_switch = False
 

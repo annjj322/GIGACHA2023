@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /home/gigacha/TEAM-GIGACHA/build
 include local_pkg/CMakeFiles/_local_pkg_generate_messages_check_deps_Local.dir/progress.make
 
 local_pkg/CMakeFiles/_local_pkg_generate_messages_check_deps_Local:
-	cd /home/gigacha/TEAM-GIGACHA/build/local_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py local_pkg /home/gigacha/TEAM-GIGACHA/src/local_pkg/msg/Local.msg geometry_msgs/Quaternion
+	cd /home/gigacha/TEAM-GIGACHA/build/local_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genmsg/cmake/../../../lib/genmsg/genmsg_check_deps.py local_pkg /home/gigacha/TEAM-GIGACHA/src/local_pkg/msg/Local.msg geometry_msgs/Quaternion:std_msgs/Header
 
 _local_pkg_generate_messages_check_deps_Local: local_pkg/CMakeFiles/_local_pkg_generate_messages_check_deps_Local
 _local_pkg_generate_messages_check_deps_Local: local_pkg/CMakeFiles/_local_pkg_generate_messages_check_deps_Local.dir/build.make

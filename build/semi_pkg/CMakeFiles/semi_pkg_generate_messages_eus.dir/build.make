@@ -60,11 +60,11 @@ semi_pkg/CMakeFiles/semi_pkg_generate_messages_eus: /home/gigacha/TEAM-GIGACHA/d
 /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg/msg/Perception.l: /opt/ros/melodic/lib/geneus/gen_eus.py
 /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg/msg/Perception.l: /home/gigacha/TEAM-GIGACHA/src/semi_pkg/msg/Perception.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/gigacha/TEAM-GIGACHA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating EusLisp code from semi_pkg/Perception.msg"
-	cd /home/gigacha/TEAM-GIGACHA/build/semi_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/gigacha/TEAM-GIGACHA/src/semi_pkg/msg/Perception.msg -Isemi_pkg:/home/gigacha/TEAM-GIGACHA/src/semi_pkg/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/melodic/share/geometry_msgs/cmake/../msg -Ifinal_pkg:/home/gigacha/TEAM-GIGACHA/src/final_pkg/msg -Ilocal_pkg:/home/gigacha/TEAM-GIGACHA/src/local_pkg/msg -p semi_pkg -o /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg/msg
+	cd /home/gigacha/TEAM-GIGACHA/build/semi_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/gigacha/TEAM-GIGACHA/src/semi_pkg/msg/Perception.msg -Isemi_pkg:/home/gigacha/TEAM-GIGACHA/src/semi_pkg/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/melodic/share/geometry_msgs/cmake/../msg -Ilocal_pkg:/home/gigacha/TEAM-GIGACHA/src/local_pkg/msg -p semi_pkg -o /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg/msg
 
 /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg/manifest.l: /opt/ros/melodic/lib/geneus/gen_eus.py
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/gigacha/TEAM-GIGACHA/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating EusLisp manifest code for semi_pkg"
-	cd /home/gigacha/TEAM-GIGACHA/build/semi_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg semi_pkg std_msgs geometry_msgs final_pkg local_pkg
+	cd /home/gigacha/TEAM-GIGACHA/build/semi_pkg && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/geneus/cmake/../../../lib/geneus/gen_eus.py -m -o /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg semi_pkg std_msgs geometry_msgs local_pkg
 
 semi_pkg_generate_messages_eus: semi_pkg/CMakeFiles/semi_pkg_generate_messages_eus
 semi_pkg_generate_messages_eus: /home/gigacha/TEAM-GIGACHA/devel/share/roseus/ros/semi_pkg/msg/Perception.l

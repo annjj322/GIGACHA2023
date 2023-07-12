@@ -1,10 +1,18 @@
 (cl:in-package local_pkg-msg)
-(cl:export '(X-VAL
+(cl:export '(HEADER-VAL
+          HEADER
+          X-VAL
           X
           Y-VAL
           Y
           HEADING-VAL
           HEADING
+          IMU_HEADING-VAL
+          IMU_HEADING
+          GPS_HEADING-VAL
+          GPS_HEADING
+          GPS_HEADING_UNDER_4_HEADACC-VAL
+          GPS_HEADING_UNDER_4_HEADACC
           ROLL-VAL
           ROLL
           PITCH-VAL
@@ -13,12 +21,40 @@
           DR_X
           DR_Y-VAL
           DR_Y
+          DEAD_M-VAL
+          DEAD_M
+          ENCODER_LEFT-VAL
+          ENCODER_LEFT
+          ENCODER_RIGHT-VAL
+          ENCODER_RIGHT
+          DEAD_RIGHT-VAL
+          DEAD_RIGHT
+          DISTANCE-VAL
+          DISTANCE
+          ENCODER_X-VAL
+          ENCODER_X
+          ENCODER_Y-VAL
+          ENCODER_Y
           HACC-VAL
           HACC
+          HEADACC-VAL
+          HEADACC
+          GEAR-VAL
+          GEAR
           SPEEED-VAL
           SPEEED
+          GSPEED-VAL
+          GSPEED
           DIS-VAL
           DIS
+          POSITION_ERROR_BETWEEN_ENCODER_AND_GPS-VAL
+          POSITION_ERROR_BETWEEN_ENCODER_AND_GPS
           ORIENTATION-VAL
           ORIENTATION
+          DISTANCE_X-VAL
+          DISTANCE_X
+          DISTANCE_Y-VAL
+          DISTANCE_Y
+          DISTANCE_Z-VAL
+          DISTANCE_Z
 ))

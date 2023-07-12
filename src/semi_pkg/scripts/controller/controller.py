@@ -2,7 +2,7 @@ import threading
 import rospy
 from time import sleep
 from .lat_controller import LatController
-# from .lon_controller import LonController
+from .lon_controller import LonController
 from local_pkg.msg import Control_Info
 
 class Controller(threading.Thread):
@@ -13,27 +13,28 @@ class Controller(threading.Thread):
         self.ego = parent.shared.ego
         self.plan = parent.shared.plan
         self.parking = parent.shared.park
-        self.lattice_path = parent.shared.lattice_path
 
         self.serial_pub = rospy.Publisher("controller", Control_Info, queue_size=1)        
 
-        self.lat_controller = LatController(self.ego, self.shared, self.lattice_path, self.plan, self.parking)
-        # self.lon_controller = LonController(self.ego, self.shared)
+        self.lat_controller = LatController(self.ego, self.shared, self.plan, self.parking)
+        self.lon_controller = LonController(self.ego, self.shared, self.plan, self.parking)
+
+        self.control_lock = threading.Lock()
 
     def run(self):
         while True:
             try:
-                self.ego.input_steer = self.lat_controller.run()
-                # self.ego.input_speed = self.lon_controller.run()
-                if self.plan.behavior_decision == "driving":
-                    self.ego.input_speed = self.ego.map_speed[self.ego.index]
-                else:
-                    self.ego.input_speed = self.ego.target_speed
-
-                self.ego.input_brake = self.ego.target_brake
+                self.control_lock.acquire()
+                # Value decision
                 self.ego.input_gear = self.ego.target_gear
-
-                ######################## SERIAL ################################
+                self.ego.input_brake = self.ego.target_brake
+                self.ego.input_speed = self.lon_controller.run()
+                if self.parking.on =='on':
+                    self.ego.input_steer = self.ego.target_steer
+                else:
+                    self.ego.input_steer = self.lat_controller.run() 
+               
+                # To serial 
                 serial = Control_Info()
                 serial.emergency_stop = self.ego.input_estop
                 serial.gear = self.ego.input_gear
@@ -41,7 +42,8 @@ class Controller(threading.Thread):
                 serial.steer = self.ego.input_steer
                 serial.brake = self.ego.input_brake
 
-                self.serial_pub.publish(serial) ## jm : 어디로 쏘나요?
+                self.serial_pub.publish(serial) 
+                self.control_lock.release()
 
             except IndexError:
                 print("+++++++controller++++++")

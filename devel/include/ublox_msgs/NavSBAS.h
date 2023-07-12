@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -71,7 +71,7 @@ struct NavSBAS_
    typedef boost::array<uint8_t, 3>  _reserved0_type;
   _reserved0_type reserved0;
 
-   typedef std::vector< ::ublox_msgs::NavSBAS_SV_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::NavSBAS_SV_<ContainerAllocator> >::other >  _sv_type;
+   typedef std::vector< ::ublox_msgs::NavSBAS_SV_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::NavSBAS_SV_<ContainerAllocator> >> _sv_type;
   _sv_type sv;
 
 

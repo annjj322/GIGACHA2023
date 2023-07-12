@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -50,7 +50,7 @@ struct MonVER_
    typedef boost::array<uint8_t, 10>  _hwVersion_type;
   _hwVersion_type hwVersion;
 
-   typedef std::vector< ::ublox_msgs::MonVER_Extension_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::MonVER_Extension_<ContainerAllocator> >::other >  _extension_type;
+   typedef std::vector< ::ublox_msgs::MonVER_Extension_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::MonVER_Extension_<ContainerAllocator> >> _extension_type;
   _extension_type extension;
 
 

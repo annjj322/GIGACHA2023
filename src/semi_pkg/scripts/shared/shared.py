@@ -16,10 +16,7 @@ class Shared:
         # for planner
         self.state = ''
         self.global_path = Path()
-        self.cut_path = Path()
-        self.lattice_path = []
-        self.selected_lane = 1
         self.plan = Plan()
-
         # for parking
         self.park = Parking()
+        

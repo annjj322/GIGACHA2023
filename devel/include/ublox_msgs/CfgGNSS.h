@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <memory>
 
 #include <ros/types.h>
 #include <ros/serialization.h>
@@ -54,7 +54,7 @@ struct CfgGNSS_
    typedef uint8_t _numConfigBlocks_type;
   _numConfigBlocks_type numConfigBlocks;
 
-   typedef std::vector< ::ublox_msgs::CfgGNSS_Block_<ContainerAllocator> , typename ContainerAllocator::template rebind< ::ublox_msgs::CfgGNSS_Block_<ContainerAllocator> >::other >  _blocks_type;
+   typedef std::vector< ::ublox_msgs::CfgGNSS_Block_<ContainerAllocator> , typename std::allocator_traits<ContainerAllocator>::template rebind_alloc< ::ublox_msgs::CfgGNSS_Block_<ContainerAllocator> >> _blocks_type;
   _blocks_type blocks;
 
 

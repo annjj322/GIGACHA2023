@@ -811,7 +811,8 @@ class Motion():
         space = 0.5
         left_offset = 2
         right_offset = 2
-        first_index = 1235
+        # first_index = 1235
+        first_index = 600
         tm = np.array([self.global_path.x[first_index],self.global_path.y[first_index]])#내 인덱스에서 글로벌 좌표
         self.inc = np.array([(self.global_path.x[first_index+5]-self.global_path.x[first_index]),(self.global_path.y[first_index+5]-self.global_path.y[first_index])])
         self.inc = self.inc/(np.linalg.norm(self.inc))

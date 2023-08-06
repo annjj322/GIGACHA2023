@@ -30,6 +30,9 @@ class MissionPlanner(threading.Thread):
                 elif self.plan.mission_decision == "obs_tmp":
                      self.plan.behavior_decision = "obs_tmp"  
 
+                if self.plan.mission_decision == "narrow_driving":
+                    self.plan.behavior_decision = "narrow_driving"
+
             except IndexError:
                 print("++++++++mission_planner+++++++++")
 

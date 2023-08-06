@@ -2,6 +2,7 @@
 import threading
 from time import sleep
 from .sub_function.behavior import Behavior
+from .sub_function.narrow import NarrowDriving
 
 class BehaviorPlanner(threading.Thread):
     def __init__(self, parent, rate):
@@ -14,6 +15,7 @@ class BehaviorPlanner(threading.Thread):
         self.plan = self.shared.plan
 
         self.behavior = Behavior(self.shared, self.ego, self.perception, self.plan)
+        self.narrow = NarrowDriving(self.shared,self.ego, self.perception)
         
     def run(self):
         while True:
@@ -33,6 +35,8 @@ class BehaviorPlanner(threading.Thread):
                 elif self.plan.behavior_decision == "obs_tmp":
                     self.behavior.obs()
 
+                elif self.plan.behavior_decision == "narrow_driving":
+                    self.narrow.run()
 
         
             except IndexError:

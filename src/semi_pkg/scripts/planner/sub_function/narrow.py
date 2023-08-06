@@ -16,6 +16,7 @@ class NarrowDriving():
         self.perception = pc
         self.global_path = self.shared.global_path
 
+        self.timer = 0
         self.inner_cone = []
         self.outer_cone = []
         self.inner_path = []
@@ -78,16 +79,7 @@ class NarrowDriving():
                 self.outer_cone = np.array([self.perception.outer_x,self.perception.outer_y])
                 self.cone_path()
                 self.inner_path, self.outer_path = self.path_maker(self.inner_cone,self.outer_cone)
-                for i in range(len(self.inner_path[0])):
-                    self.data[i] = [self.inner_path[0][i],self.inner_path[1][i],"narrow_driving"]
-                with open(self.dir+self.map_name+'_inner.json','w') as outfile:
-                    json.dump(self.data, outfile, indent=4)
-                
-                for i in range(len(self.outer_path[0])):
-                    self.data[i] = [self.outer_path[0][i],self.outer_path[1][i],"narrow_driving"]
-                with open(self.dir + self.map_name + '_outer.json', 'w') as outfile:
-                    json.dump(self.data, outfile, indent=4)
-                self.read_global_path() # read global path에 대한 모듈이 생기면 inner와 outer 모두 생성
+
                 # read global path는 아직 완료되지 않은 task
                 self.map_flag = False
 
@@ -111,26 +103,28 @@ class NarrowDriving():
                 print('global path planning')
                 target_index = self.ego.index + 10
                 target_position = np.array([self.global_path.x[target_index],self.global_path.y[target_index]])
-                ego_position = np.array([self.ego.info.x,self.ego.info.y])
+                ego_position = np.array([self.ego.x,self.ego.y])
+                
+                self.timer += 1
 
-                if -15 < arctan2(ego_position-target_position) < 15:
-                    pass
-                elif arctan2(ego_position-target_position) > 15:
-                    self.global_path.x = self.left_path[0]
-                    self.global_path.y = self.left_path[1]                    
-                elif arctan2(ego_position-target_position) < -15:
+                if self.timer > 20:
                     self.global_path.x = self.right_path[0]
-                    self.global_path.y = self.right_path[1]
+                    self.global_path.y = self.right_path[1]                    
+
+                else:
+                    self.global_path.x = self.left_path[0]
+                    self.global_path.y = self.left_path[1] 
+                # if -15 < arctan2(ego_position-target_position) < 15:
+                #     pass
+                # elif arctan2(ego_position-target_position) > 15:
+                #     self.global_path.x = self.left_path[0]
+                #     self.global_path.y = self.left_path[1]                    
+                # elif arctan2(ego_position-target_position) < -15:
+                #     self.global_path.x = self.right_path[0]
+                #     self.global_path.y = self.right_path[1]
 
     ###################### global path planning method ##############################
 
-    def read_global_path(self): # read global path 를 전부 복사해 오는 방식을 사용하거나 모듈로 만들어서 따로 사용할 수 있도록 해야됨.
-        with open(f"maps/narrow.json", 'r') as json_file:
-            json_data = json.load(json_file)
-            for n, (x, y, mission) in enumerate(json_data.values()):
-                self.global_path.x.append(x)
-                self.global_path.y.append(y)
-                self.global_path.mission.append(mission)
 
     def cone_path(self): # interpolate inner or outer cone path
         '''

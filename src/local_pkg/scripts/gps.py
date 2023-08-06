@@ -22,10 +22,10 @@ class GPS():
         self.gps_heading = 0.0
         self.hAcc = 0
         self.heading_switch = False
-
         self.cnt = False
         self.prev_heading = 0
-
+        self.raw_x=0
+        self.raw_y=0
         self.time = 0.0
 
         with open('/home/gigacha/TEAM-GIGACHA/src/local_pkg/scripts/base.json') as base:
@@ -43,6 +43,7 @@ class GPS():
     def gps_call_back_simul(self, data):
         self.x, self.y, _ = pymap3d.geodetic2enu(data.position.x, data.position.y, self.alt,
                                                  self.lat, self.lon, self.alt)
+        self.raw_x,self.raw_y = data.position.x, data.position.y
         self.time = time.time()
 
     def navpvt_call_back(self, data):

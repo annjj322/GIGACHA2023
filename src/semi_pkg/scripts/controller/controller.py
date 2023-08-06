@@ -25,11 +25,12 @@ class Controller(threading.Thread):
         while True:
             try:
                 self.control_lock.acquire()
+
                 # Value decision
                 self.ego.input_gear = self.ego.target_gear
                 self.ego.input_brake = self.ego.target_brake
                 self.ego.input_speed = self.lon_controller.run()
-                if self.parking.on =='on':
+                if self.parking.on == 'on1':
                     self.ego.input_steer = self.ego.target_steer
                 else:
                     self.ego.input_steer = self.lat_controller.run() 
@@ -43,6 +44,7 @@ class Controller(threading.Thread):
                 serial.brake = self.ego.input_brake
 
                 self.serial_pub.publish(serial) 
+                
                 self.control_lock.release()
 
             except IndexError:

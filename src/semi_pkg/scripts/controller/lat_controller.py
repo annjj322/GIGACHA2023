@@ -15,30 +15,35 @@ class LatController():
     def run(self):
         while True:
             try:
-                return self.Pure_pursuit()
+                if self.global_path.mission[self.ego.index] == "obs_tmp":
+                    return self.local_pure_pursuit()
+                    
+                else:
+                    return self.pure_pursuit()
             except IndexError:
                 # sleep(1)
                 print("++++++++lat_controller+++++++++")
+                pass
 
-    def Pure_pursuit(self, lookahead=None):
+    def pure_pursuit(self, lookahead=None):
         heading = self.ego.heading
         x = self.ego.x
         y = self.ego.y
-
+        
         self.path = self.shared.global_path
-
+        
         # self.lookahead decision  
         if lookahead == None:  
             if self.ego.target_gear == 2:
                 self.lookahead = int(clip((9*self.ego.target_speed-120), 18, 60))
             else:
-                self.lookahead = int(clip((9*self.ego.target_speed-120), 24, 60))
+                self.lookahead = int(clip((9*self.ego.target_speed-120), 30, 60))
         else:
             self.lookahead = lookahead
 
         self.target_index = self.ego.index + min(self.lookahead, len(self.path.x)-1)
-        if self.target_index >= len(self.global_path.x)-1:
-            self.target_index = len(self.global_path.x)-1
+        if self.target_index >= len(self.path.x)-1:
+            self.target_index = len(self.path.x)-1
             
         target_x, target_y = self.path.x[self.target_index], self.path.y[self.target_index]
         tmp = degrees(atan2(target_y - y, target_x - x)) % 360
@@ -47,5 +52,30 @@ class LatController():
         tmp_steer = degrees(angle) 
         
         self.steer = float(clip(-tmp_steer, -27.0, 27.0))
+
+        return self.steer
+    
+    def local_pure_pursuit(self, lookahead=None):
+        heading = self.ego.heading
+        x = self.ego.x
+        y = self.ego.y
+        
+        self.path = self.shared.local_path
+
+        # self.lookahead decision  
+        self.lookahead = 30#40#len(self.path.x)-1# 10 
+
+        self.target_index = self.lookahead
+        
+        # if self.target_index >= len(self.path.x)-1:
+        #     self.target_index = len(self.path.x)-1
+  
+        target_x, target_y = self.path.x[self.target_index], self.path.y[self.target_index]
+        tmp = degrees(atan2(target_y - y, target_x - x)) % 360
+        alpha = tmp - heading
+        angle = atan2(2.0 * self.WB * sin(radians(alpha)), self.lookahead/6)
+        tmp_steer = degrees(angle) 
+        
+        self.steer = float(clip(-tmp_steer, -27.0, 27.0)) * 3
 
         return self.steer

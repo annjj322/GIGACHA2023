@@ -11,17 +11,18 @@ class LonController():
         self.speed = 0
 
     def run(self, speed = None):
-        if self.parking.on == "on":
+        if self.parking.on == "on1":
             self.speed = self.ego.target_speed
-            print("1111111111111111")
+        elif self.parking.on == "on":
+            self.speed = self.ego.target_speed
         else:
-            print(222222222222)
             if speed == None:
                 self.speed = np.round(self.shared.ego.map_speed[self.ego.index], 2)
             else:
                 self.speed = speed
 
-        return self.speed
+        return 5
+        # return self.speed
            
         
         

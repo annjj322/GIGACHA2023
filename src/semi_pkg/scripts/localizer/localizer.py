@@ -31,6 +31,7 @@ class Localizer(threading.Thread):
         self.period = 1.0 / rate
         print(self.mapname)
         self.ego = parent.shared.ego
+        self.plan = parent.shared.plan
         self.global_path = parent.shared.global_path
         self.perception = parent.shared.perception
         self.read_global_path()  # only one time
@@ -137,9 +138,8 @@ class Localizer(threading.Thread):
                 min_idx = i
                 save_idx = i
         self.ego.index = min_idx
-        # print("mission length:", len(self.global_path.mission))
-        self.perception.signname = self.global_path.mission[self.ego.index]
-       
+        
+        self.plan.mission_decision = self.global_path.mission[self.ego.index]       
         
     def dead_reckoning(self):
         if self.hAcc < 50 :
@@ -160,7 +160,6 @@ class Localizer(threading.Thread):
         out_vel_plan = []
         r_list = []
         tmp = []
-        filtered_r_list = []
 
         for i in range(0,point_num):
             out_vel_plan.append(car_max_speed)
@@ -234,6 +233,7 @@ class Localizer(threading.Thread):
 
 
     def change_speed(self, list, index, max):
+        #보류
         left_flag = False
         right_flag = False
 

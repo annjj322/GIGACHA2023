@@ -15,23 +15,20 @@ class MissionPlanner(threading.Thread):
     def run(self):
         while True:
             try:
-                print("muyaho")
-                print(self.shared.num_of_lanes)
-                if self.shared.perception.signname == "static_obstacle":
-                    self.plan.state = "static_obstacle_detected"
-
-                elif self.shared.perception.signname == "turn_left_traffic_light":
-                    self.plan.state = "left_sign_detected"
-
-                elif self.shared.perception.signname == "AEB":
-                    self.plan.state = "emergency_stop"
-                
-                elif self.shared.perception.signname == "parking":
-                    self.plan.state = "parking"
+                if self.plan.mission_decision == "go":
+                    self.plan.behavior_decision = "go"
                     
-                elif self.shared.perception.signname == "go":
-                    self.plan.state = "go"
+                elif self.plan.mission_decision == "parrallel_parking":
+                    self.plan.behavior_decision = "parrallel_parking"
+                    
+                elif self.plan.mission_decision == "diagonal_parking":
+                    self.plan.behavior_decision = "diagonal_parking"
 
+                elif self.plan.mission_decision == "delivery":
+                    self.plan.behavior_decision = "delivery"
+                
+                elif self.plan.mission_decision == "obs_tmp":
+                     self.plan.behavior_decision = "obs_tmp"  
 
             except IndexError:
                 print("++++++++mission_planner+++++++++")

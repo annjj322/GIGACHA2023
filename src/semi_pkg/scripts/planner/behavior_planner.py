@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import threading
 from time import sleep
-from .sub_function.mission import Mission
+from .sub_function.behavior import Behavior
+
 class BehaviorPlanner(threading.Thread):
     def __init__(self, parent, rate):
         super().__init__()
@@ -12,28 +13,27 @@ class BehaviorPlanner(threading.Thread):
         self.perception = self.shared.perception
         self.plan = self.shared.plan
 
-        self.mission = Mission(self.shared, self.ego, self.perception, self.plan)
+        self.behavior = Behavior(self.shared, self.ego, self.perception, self.plan)
         
     def run(self):
         while True:
             try:
-                if self.plan.state == "go":
-                    self.mission.go()
+                if self.plan.behavior_decision == "go":
+                    self.behavior.go()
 
-                elif self.plan.state == "parking":
-                    
-                    # self.mission.Parking_KCity_diagonal_LJY()
-                    # self.mission.Parking_KCity_parallel_hy()
-                    self.mission.parking_parallel_jm()
-                
-                elif self.plan.state == "static_obstacle_detected":
-                    self.mission.static_obstacle()
+                elif self.plan.behavior_decision == "parrallel_parking":
+                    self.behavior.parrallel_parking()
 
-                elif self.plan.state == "left_sign_detected":
-                    self.mission.turn_left()
+                elif self.plan.behavior_decision == "diagonal_parking":
+                    self.behavior.diagonal_parking()
 
-                elif self.plan.state == "emergency_stop":
-                    self.mission.emergency_stop()
+                elif self.plan.behavior_decision == "delivery":
+                    self.behavior.delivery()
+
+                elif self.plan.behavior_decision == "obs_tmp":
+                    self.behavior.obs()
+
+
         
             except IndexError:
                 print("++++++++behavior_planner+++++++++")

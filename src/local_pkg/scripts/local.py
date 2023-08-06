@@ -103,7 +103,7 @@ class Localization():
         self.msg.orientation.y = orientation[1]
         self.msg.orientation.z = orientation[2]
         self.msg.orientation.w = orientation[3] # 변수들에 최종값 담기
-
+        # print('rawx, y ',self.gps.raw_x,self.gps.raw_y)
         self.pub.publish(self.msg) # msg로 publish
 
         rospy.loginfo(self.msg)

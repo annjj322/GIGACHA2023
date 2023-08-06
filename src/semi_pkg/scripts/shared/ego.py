@@ -13,6 +13,7 @@ class Ego():
         self.map_speed = []
         
         # Odometry
+        # 이봄한테 물어보고 필요없으면 유기
         self.dr_x = 0
         self.dr_y = 0
 
@@ -27,6 +28,7 @@ class Ego():
         self.alive = 0
 
         # Planner to Controller
+        # 보류
         self.target_estop = 0x00
         self.target_speed = 15.0
         self.target_gear = 0

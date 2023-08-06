@@ -14,9 +14,13 @@ class Shared:
         self.perception = Perception_()
 
         # for planner
-        self.state = ''
         self.global_path = Path()
+        self.local_path=Path()
         self.plan = Plan()
+
         # for parking
         self.park = Parking()
         
+        #hy test
+        self.hy_test = []
+     

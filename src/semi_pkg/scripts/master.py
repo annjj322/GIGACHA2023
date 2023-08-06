@@ -42,17 +42,25 @@ class Master(threading.Thread):
         self.init_thread(self.visualizer)
 
         while True:
-            # print('-------------------------------------\nShared.plan_state : {} | Input speed : {}\nTarget speed : {:.2f} | Steer : {:.2f} \n Target index : {} | Lookahead : {}\nIndex : {} | Heading : {}'.format(
-                    # self.shared.plan.state, 
-                    # self.shared.ego.input_speed,
-                    # self.shared.ego.target_speed, 
-                    # self.shared.ego.input_steer, 
-                    # self.controller.lat_controller.target_index,
-                    # self.controller.lat_controller.lookahead,
-                    # self.shared.ego.index,
-                    # self.shared.ego.heading))
-            # print('ego_brake',self.shared.ego.input_brake)
-            print('index :{} | heading :{}'.format(self.shared.ego.index, round(self.shared.ego.heading,3)))
+            print('------------------------------------- \
+                  \nBehavior_decision : {} | Input speed : {} \
+                  \nTarget speed : {:.2f} | Steer : {:.2f} \
+                  \n Target index : {} | Lookahead : {} \
+                  \nIndex : {} | Heading : {} \
+                  \nx : {} | y : {} \
+                  '.format(
+                    self.shared.plan.behavior_decision, 
+                    self.shared.ego.input_speed,
+                    self.shared.ego.target_speed, 
+                    self.shared.ego.input_steer, 
+                    self.controller.lat_controller.target_index,
+                    self.controller.lat_controller.lookahead,
+                    self.shared.ego.index,
+                    self.shared.ego.heading,
+                    self.shared.ego.x,
+                    self.shared.ego.y
+                    ))
+            
             self.checker_all()
 
             sleep(self.period)
@@ -81,8 +89,11 @@ if __name__ == "__main__":
     argparser.add_argument(
         '--map',
         
-        # default='kcity_simul/semi_map_driving', # lattice planning
-        default='kcity_simul/semi_map_parking', # parking
+        # default='kcity_simul/semi_map', #go
+        # default='kcity_simul/semi_map_parrallel_parking', # parrallel parking
+        # default='kcity_simul/semi_map_diagonal_parking', # diagonal parking
+        # default='kcity_simul/semi_map_delivery', # delivery
+        default='kcity_simul/semi_map_obs_tmp',
         # default='kcity_simul/semi_map_driving',
         # default='kcity_simul/parallelpark_map', # parking2
         help='kcity/map1, songdo/map2, yonghyeon/Yonghyeon, kcity_simul/left_lane, kcity_simul/right_lane, kcity_simul/final, inha_parking/gpp, kcity_simul/semi_map, kcity_simul/parallelpark'

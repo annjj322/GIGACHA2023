@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 import threading
 from time import sleep
-# from .sub_function.motion import Motion
-from .sub_function.motion_morai import Motion
-# from .sub_function.parking_diagonal import Parking_Motion
-# from .sub_function.parking_diagonal_LJY import Parking_Motion_LJY
-from .sub_function.parking_parallel_hy import parallel_traj_hy
-
+from .sub_function.motion import Motion, Potential_field
 class MotionPlanner(threading.Thread):
     def __init__(self, parent, rate):
         super().__init__()
@@ -19,49 +14,53 @@ class MotionPlanner(threading.Thread):
         # self.trajectory = self.plan.trajectory # to controller
         self.global_path = self.shared.global_path  # from localizer
 
-        self.motion = Motion(self.shared, self.plan, self.ego)
-        # self.park_motion = Parking_Motion_LJY(self.shared, self.plan, self.ego) # 캡스톤
-        self.park_motion = parallel_traj_hy(self.shared, self.plan, self.ego,self.parking)
+        self.motion = Motion(self.shared, self.plan, self.ego, self.parking)
 
     def run(self):
         while True:
             try:
-                if self.shared.plan.behavior_decision == "go":
-                    pass
+                if self.plan.motion_decision == "go":
+                    self.motion.go()
                 
-                elif self.shared.plan.behavior_decision == "parking":
-                    pass
-                # ################ parking ######################
-                elif self.shared.plan.behavior_decision == "backward_trajectory_Create":
-                    # self.park_motion.make_parking_tra()
-                    # self.park_motion.making_backward_path()
-                    pass
-                
-                elif self.shared.plan.behavior_decision == "forward_trajectory_Create":
-                    # self.park_motion.make_parking_tra()
-                    self.park_motion.making_forward_path()
+                elif self.plan.motion_decision == "diagonal_parking":
+                    self.motion.diagonal_step1()
+                    self.motion.diagonal_step2()
+                    self.motion.diagonal_step3()
+                    self.motion.diagonal_step4()
+                    self.motion.diagonal_step5()
+                    self.motion.diagonal_step6()
+                    self.motion.diagonal_step7()
+                    self.motion.diagonal_step8()
+                    self.motion.diagonal_step9()
+                    self.motion.diagonal_step10()
+                    self.motion.diagonal_step11()
+                    self.motion.diagonal_step12()
+                    self.motion.diagonal_step13()
 
-                elif self.shared.plan.behavior_decision == "forward_reverse_trajectory_Create":
-                    # self.park_motion.make_parking_tra()
-                    self.park_motion.making_reverse_forward_path()
-                ###########################################################################
-                elif self.shared.plan.behavior_decision == "forward_trajectory_Create_para":
-                    self.park_motion.making_forward_path()
+                elif self.plan.motion_decision == "parrallel_parking":
+                    self.motion.parrallel_step1()
+                    self.motion.parrallel_step2()
+                    self.motion.parrallel_step3()
+                    self.motion.parrallel_step4()
+                    self.motion.parrallel_step5()
+                    self.motion.parrallel_step6()
+                    self.motion.parrallel_step7()
+                    self.motion.parrallel_step8()
+
+                elif self.plan.motion_decision == "delivery":
+                    self.motion.delivery_step1()
+                    self.motion.delivery_step2()
+                    self.motion.delivery_step3()
+                    self.motion.delivery_step4()
                 
-                elif self.shared.plan.behavior_decision == "exit":
-                    self.park_motion.exit()
-                elif self.shared.plan.behavior_decision == "backward_trajectory_Create_para":
-                    self.park_motion.backward_path()
-                #################공통#############################################    
-                elif self.shared.plan.behavior_decision == "parkingForwardOn":
-                    pass
-                elif self.shared.plan.behavior_decision == "parkingBackwardOn":
-                    pass
-                
-                    
+                elif self.plan.motion_decision == "obs_tmp":
+                    self.motion.Potential_field0()
+                    # self.motion.Potential_field1()
+                    # self.motion.Potential_field2()
+                    # self.motion.Potential_field3()
+
                 else:
                     pass
-                #################################################
 
             except IndexError:
                 print("++++++++motion_planner+++++++++")

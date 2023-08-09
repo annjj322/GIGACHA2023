@@ -22,7 +22,7 @@ class LatController():
                     return self.pure_pursuit()
             except IndexError:
                 # sleep(1)
-                print("++++++++lat_controller+++++++++")
+                # print("++++++++lat_controller+++++++++")
                 pass
 
     def pure_pursuit(self, lookahead=None):
@@ -63,7 +63,8 @@ class LatController():
         self.path = self.shared.local_path
 
         # self.lookahead decision  
-        self.lookahead = 30#40#len(self.path.x)-1# 10 
+        # self.lookahead = 30
+        self.lookahead = len(self.path.x)-1
 
         self.target_index = self.lookahead
         

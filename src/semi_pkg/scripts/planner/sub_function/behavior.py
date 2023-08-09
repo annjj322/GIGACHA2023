@@ -31,7 +31,7 @@ class Behavior():
         if self.perception.diagonal_flag:
             self.plan.motion_decision = "diagonal_parking"
         else:
-            self.plan.motion_decicion = "diagonal_parking"
+            self.plan.motion_decision = "diagonal_parking"
         
     def delivery(self):
         if self.perception.delivery_flag:

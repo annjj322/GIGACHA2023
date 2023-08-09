@@ -139,6 +139,7 @@ class Localizer(threading.Thread):
                 save_idx = i
         self.ego.index = min_idx
         
+        
         self.plan.mission_decision = self.global_path.mission[self.ego.index]       
         
     def dead_reckoning(self):

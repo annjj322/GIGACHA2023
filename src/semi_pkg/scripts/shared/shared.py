@@ -21,6 +21,6 @@ class Shared:
         # for parking
         self.park = Parking()
         
-        #hy test
-        self.hy_test = []
+        # potential field
+        self.obstacles = []
      

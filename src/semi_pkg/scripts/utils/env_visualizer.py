@@ -23,20 +23,23 @@ class Visualizer(threading.Thread):
 
         self.global_path = self.shared.global_path  # from localizer
         self.parking = self.shared.park
-        ##
+
         self.local_path=self.shared.local_path
-        ##
+        self.obstacles = self.shared.obstacles
+
         # Publisher
         self.vis_global_path_pub = rospy.Publisher(
             "/vis_global_path", Path, queue_size=1)  # using path
-                
-
         self.vis_trajectory_pub = rospy.Publisher(
             "/vis_trajectory", PointCloud, queue_size=1)
         self.vis_pose_pub = rospy.Publisher(
             "/vis_position", Odometry, queue_size=1)
-        
-        self.vis_trajectory_pub_dr = rospy.Publisher("/vis_trajectory_dr", PointCloud, queue_size=1)
+        self.vis_trajectory_pub_dr = rospy.Publisher(
+            "/vis_trajectory_dr", PointCloud, queue_size=1)
+        self.vis_local_path_pub = rospy.Publisher(
+            "/vis_local_path", Path, queue_size=1)
+        self.vis_obstacles_pub = rospy.Publisher(
+            "/vis_obstacles", PointCloud, queue_size=1)
 
         self.vis_global_path = Path()  # using path
         self.vis_global_path.header.frame_id = "map"
@@ -49,18 +52,13 @@ class Visualizer(threading.Thread):
 
         self.vis_pose_dr = Odometry()
         self.vis_pose_dr.header.frame_id = "map"
-        ################################################
-        self.vis_local_path_pub = rospy.Publisher(
-            "/vis_local_path",Path,queue_size=1
-        )
+        
         self.vis_local_path = Path()
         self.vis_local_path.header.frame_id = "map"
-        #######실험실####################################
-        self.hy_test = self.shared.hy_test
-        self.vis_hy_test = PointCloud()
-        self.vis_hy_test.header.frame_id = "map"
-        self.hy_pub = rospy.Publisher('/vis_hy_test',PointCloud, queue_size=10)
-        ################################################
+
+        self.vis_obstacles = PointCloud()
+        self.vis_obstacles.header.frame_id = "map"
+
 
         #################
         self.t = time()
@@ -120,16 +118,16 @@ class Visualizer(threading.Thread):
                     read_pose.pose.orientation.w = 1
                     hyp.poses.append(read_pose)
                 self.vis_local_path.poses = hyp.poses
-                ##################실험실#############################
-                self.vis_hy_test = PointCloud()
-                self.vis_hy_test.header.frame_id = "map"
-                for t in self.shared.hy_test:
+
+                tmp = []
+                for t in self.shared.obstacles:
                     point = Point32()
                     point.x = t[0]
                     point.y = t[1]
                     point.z = 0
-                    self.vis_hy_test.points.append(point)
-                ###################################################
+                    tmp.append(point)
+                self.vis_obstacles.points = tmp
+                
 
                 # publish
 
@@ -139,10 +137,8 @@ class Visualizer(threading.Thread):
                 self.vis_trajectory_pub.publish(self.vis_trajectory)
 
                 self.vis_pose_pub.publish(self.vis_pose)
-                ###
                 self.vis_local_path_pub.publish(self.vis_local_path)
-                ###
-                self.hy_pub.publish(self.vis_hy_test)
+                self.vis_obstacles_pub.publish(self.vis_obstacles)
             
             except IndexError:
                 print("++++++++env_visualizer+++++++++")

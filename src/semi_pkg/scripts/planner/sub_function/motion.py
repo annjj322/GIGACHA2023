@@ -2,17 +2,19 @@ from time import sleep
 import numpy as np
 from shared.path import Path
 from .cubic_spline_planner import calc_spline_course
-from math import hypot,atan2,sin,cos,pi
-# import math as m
+from math import hypot,atan2,sin,cos,pi,sqrt,radians
 import threading
 # import rospy
 # from nav_msgs.msg import Path as Path2
 import threading
-class Potential_field:
+import rospy
+from visualization_msgs.msg import MarkerArray, Marker
+
+class Potential_field():
     def __init__(self, ego):
-        self.repulsive = 0
-        self.attractive = 0
-        self.potential = 0
+        self.repulsive = np.array([0, 0])
+        self.attractive = np.array([0, 0])
+        self.potential = np.array([0, 0])
 
         self.vehicle_position = None
         self.goal_position = None
@@ -49,10 +51,6 @@ class Potential_field:
 
             unit_vector = (self.vehicle_position - obstacle)/distance**1.3
 
-            # inv_inc = [-0.89454132, 0.44698527]
-
-            
-            # unit_vector = np.dot(unit_vector, inv_inc) * np.array(inv_inc)
             
 
             # print("repulsive unit vec:", unit_vector)
@@ -65,7 +63,7 @@ class Potential_field:
         distance = np.linalg.norm(self.vehicle_position - self.goal_position)
         distance += 0.01
         ###
-        scale = 15
+        scale = 30
         ###
 
         unit_vector = (self.goal_position - self.vehicle_position)/distance
@@ -81,10 +79,9 @@ class Potential_field:
 
         # for erp42 : constant speed
         self.potential = self.potential/np.linalg.norm(self.potential)
-        scale = 0.1
-        self.potential = self.potential*scale
+        self.potential_scale = 0.1
+        self.potential = self.potential*self.potential_scale
 
-        self.potential_scale = repulsive_scale + attractive_scale
      
 
     def run(self):
@@ -98,12 +95,17 @@ class Potential_field:
 
 class Motion():
     def __init__(self, sh, pl, eg, pk):
+        self.pub = rospy.Publisher("/points_hy", MarkerArray, queue_size=1)
+        self.msg = Marker()
+        self.marker_array = MarkerArray()
+        
         self.shared = sh
         self.plan = pl
         self.ego = eg
         self.parking = pk
 
         self.global_path = self.shared.global_path # from localizer
+
 
         # step
         self.first_stop = False
@@ -120,7 +122,7 @@ class Motion():
         self.twelfth_stop = False
         self.thirteenth_stop = False
 
-        # parking
+        # diagonal parking
         self.Ledgedata = [64.6268, 42.5435] # kcity parking space
         self.Redgedata = [65.5141, 40.1389]
         self.middlepoint = [(self.Ledgedata[0] + self.Redgedata[0])/2,(self.Ledgedata[1] + self.Redgedata[1])/2]
@@ -140,30 +142,28 @@ class Motion():
         self.delivery_index = None
         self.add = 50
 
-        # for save global path
         self.global_path_x_storage = []
         self.global_path_y_storage = []
         
-        # pa
-        self.obstacles=[]
-        self.first_flag=False
-        self.inc=0
-        self.k=threading.Lock()
-        self.gp_save_flag=False
-        self.x=[]
-        self.y=[]
-        self.WB=1.04
+
+        # potential field
+        self.potential_lock = threading.Lock()
+        self.obstacles = []
         self.local_path = self.shared.local_path
-        self.hy_test = self.shared.hy_test
+        self.obstacles = self.shared.obstacles
         
         # obstacle avoidance
-        self.flag = True
-        self.invisible_wall2=[]
+        self.invisible_wall=[]
         self.tmp_vehicle_position = None
-        self.invisible_wall()
-        self.jiamtong = []
-        self.ego_trace= []
-        self.prev=0
+        self.create_invisible_wall()
+        self.trace = []
+        self.prev = 0
+        self.flag = None
+        # self.obstacle_map_x = self.global_path.x[1259:1684]
+        # self.obstacle_map_y = self.global_path.y[1259:1684]
+        self.obstacle_map_x = self.global_path.x[1200:1700]
+        self.obstacle_map_y = self.global_path.y[1200:1700]
+
     def target_control(self, brake, speed):
         self.ego.target_brake = brake
         self.ego.target_speed = speed
@@ -173,9 +173,7 @@ class Motion():
         dx = [pointx - x for x in self.global_path.x[0:-1]]
         dy = [pointy - y for y in self.global_path.y[0:-1]]
         for i in range(len(dx)):
-            distx = dx[i]
-            disty = dy[i]
-            dist.append(np.hypot(distx, disty))
+            dist.append(np.hypot(dx[i], dy[i]))
 
         ind = int(np.argmin(dist))
         
@@ -184,7 +182,7 @@ class Motion():
     def go(self):
         pass
 
-#############################################################################################
+################# PARRALLEL PARKING ###################################################
 
     def parrallel_step1(self):
         if not self.first_stop and 3650 <= self.ego.index: # stop
@@ -276,7 +274,7 @@ class Motion():
             self.parking.on = "off"
             self.plan.behavior_decision = "go"
 
-#####################################################################################################
+################# DIAGONAL PARKING ###################################################
 
     def find_contact(self, ps, pf):
         # find global line
@@ -613,7 +611,8 @@ class Motion():
             print("step 12")
             self.target_control(0, 6)
             self.parking.on='off'        
-#####################################################################################################
+
+################# DELIVERY ###################################################
 
     def delivery_step1(self):
         if not self.first_stop and 3400 <= self.ego.index: # 임의의 인덱스
@@ -669,132 +668,78 @@ class Motion():
             self.target_control(0,5)
             self.plan.behavior_decision = "go"
     
-##############################################################################################################
-    # 객체 생성 및 초기화
-    def Potential_field0(self):
-        self.k.acquire()
+################# STATIC OBSTACLE AVOIDANCE ##################################
+    
+    def potential_field(self):#
+        self.potential_lock.acquire()
         pf = Potential_field(self.ego)
         local_path = Path()
         local_path.x = []
         local_path.y = []
         vehicle_position = np.array([self.ego.x,self.ego.y])
         
-        if len(self.jiamtong)>20:
-            self.jiamtong.pop(0)
+        if len(self.trace)>20:
+            self.trace.pop(0)
         
-        self.jiamtong.append(vehicle_position)
-        ind = self.nearest_index2(self.ego.x,self.ego.y)
-        obstacles = self.invisible_wall2[ind-15:ind+15].copy()
+        self.trace.append(vehicle_position)
+        ind = self.find_wall_index(self.ego.x,self.ego.y)
+        obstacles = self.invisible_wall[ind-15:ind+15].copy()
 
-        self.tmp_vehicle_position = np.array([vehicle_position[0], vehicle_position[1]]) # [106.4777,127.0755]
         # obstacle = [[104.1116,122.6361],[106.4777,127.0755],[103.668,122.4512],[102.7807,122.6362],[108.1045,126.1506],[107.6608,126.3356]]
         obstacle = [[104.1116,122.6361],[102.7807,122.6362],[107.6608,126.3356]]
 
-        #######실험실#########내적해서 내가 지나간 장애물은 고려안해버리긔 
-        tmp1 = np.array([(self.global_path.x[self.ego.index+1]-self.ego.x),
-                         (self.global_path.y[self.ego.index+1]-self.ego.y)])
-        tmp1 = self.inc/(np.linalg.norm(tmp1))
         for obs in obstacle:
-            # tmp2 = np.array([(obs[0]-self.ego.x),
-            #                  (obs[1]-self.ego.y)])
-            # if np.dot(tmp1,tmp2) >0:
                 obstacles.append(obs)
-        ##############################################################
-        goal_position = np.array([self.global_path.x[self.ego.index+100], self.global_path.y[self.ego.index+100]])
 
-        ####hy_obs### 앞에 장애물 갯수많큼 팔러워 넣기~ 
-        if len(self.jiamtong)>5:
-            follower = self.jiamtong[-5]
-        else:
-            follower = self.jiamtong[-1]
+        goal_position = np.array([self.global_path.x[self.ego.index+50], self.global_path.y[self.ego.index+50]])
+
+
+        # if len(self.trace)>10:
+        #     follower = self.trace[-1]
+        # else:
+        #     follower = self.trace[-1]
+        follower = self.trace[0]
         
         for _ in range((len(obstacle)//2)):
             obstacles.append(follower)
     
 
         #########local_path update !!!#################
-        for _ in range(100):
-            self.tmp_vehicle_position = self.tmp_vehicle_position + pf.potential
-            local_path.x.append(list(self.tmp_vehicle_position)[0])
-            local_path.y.append(list(self.tmp_vehicle_position)[1])
-            local_path.mission.append("obs_tmp")
-            pf.update(self.tmp_vehicle_position, goal_position, obstacles)
-            pf.run()
-        
-        self.local_path.x = local_path.x
-        self.local_path.y = local_path.y
-        self.shared.hy_test = obstacles
-        self.k.release()
-    
-    def PF_labotary(self): #1457
-        obstacles = []
-        obstacle = [[104.1116,122.6361],[102.7807,122.6362]]#,[107.6608,126.3356]]
-        tmp = np.array([(self.global_path.x[self.ego.index+1]-self.ego.x),   # 내 앞방향 벡터
-                         (self.global_path.y[self.ego.index+1]-self.ego.y)])
-        if self.ego.index > 1457: #임시로 
-                obstacle.append([106.4777,127.0755]) # 
-        for obs2 in obstacle: # obstacle은 일단 인지된 장애물이라 가정함 
-                tmp0 = np.array([(obs2[0]-self.ego.x),
-                             (obs2[1]-self.ego.y)])
-                if np.dot(tmp,tmp0) >0:
-                        obstacles.append(obs2)     # 내가 장애물 지나면 없애버림 
-        # if len(self.ego_trace)>20: 
-        #     self.ego_trace.pop(0)
-        # self.ego_trace.append(vehicle_position) # for follower 
-        self.shared.hy_test = obstacles # obstacle's'임 진짜 장애물 최종_진짜_찐_마지막_찐찐_진짜
-        if self.flag: #처음에는 한번 돌려주고 장애물 갯수 저장하기
-            self.cal_pf(obstacles)
-            self.flag = False
-            self.prev = len(obstacles)
-        elif self.prev != len(obstacles): # 장애물 갯수가 없어지거나 더하지든 없어지든 다시 계산 
-            self.cal_pf(obstacles)
-            self.prev = len(obstacles)
-        elif self.prev == len(obstacles):
-           pass
-        else:
-            self.local_path.x = self.global_path.x
-            self.local_path.y = self.global_path.y
-    
-    def cal_pf(self,obstacles):    
-        self.k.acquire()
-        pf = Potential_field(self.ego)
-        local_path = Path()
-        local_path.x = []
-        local_path.y = []
-        #
-        goal_position = np.array([self.global_path.x[self.ego.index+100], self.global_path.y[self.ego.index+100]])
-        #
-        local_path.x.append(self.ego.x)
-        local_path.y.append(self.ego.y)
-        off_set = 2
-        for obs in obstacles:
-            jiamtong = []
-            ind = self.nearest_index(obs[0],obs[1])
-            tm = np.array([self.global_path.x[ind],self.global_path.y[ind]])
-            tmp1 = tm + self.inv_inc * off_set
-            tmp2 = tm - self.inv_inc * off_set
-            jiamtong.append(obs)
-            jiamtong.append(tmp1)
-            jiamtong.append(tmp2)
-            pf.update(tm,goal_position,jiamtong)
-            pf.run()
-            tm = tm + pf.potential
-            local_path.x.append(list(tm[0]))
-            local_path.y.append(list(tm[1]))
-        
-        local_path.x.append(self.global_path.x[self.ego.index + 30])
-        local_path.y.append(self.global_path.y[self.ego.index + 30])
-        local_path.x, local_path.y, _, _,_ = calc_spline_course(local_path.x,local_path.y)
-        self.local_path.x = local_path.x
-        self.local_path.y = local_path.y
+        self.jmtmp = -np.array(self.jmtmp)
+        for _ in range(30):
+            # print(self.jmtmp)
+            # print(pf.potential)
+            # print()
+            # print(np.dot(self.jmtmp, pf.potential))
+            if np.dot(self.jmtmp, pf.potential) > 0:
+                tmp1 = np.array([self.jmtmp[0], self.jmtmp[1], 0])
+                tmp2 = np.array([pf.potential[0], pf.potential[1], 0])
+                if np.cross(tmp1, tmp2)[2] < 0:
+                    pf.potential = -self.jmtmp2*pf.potential_scale
+                else:
+                    pf.potential = self.jmtmp2*pf.potential_scale
+                    
+            vehicle_position = vehicle_position + pf.potential
             
-    def nearest_index2(self, pointx, pointy):
+            local_path.x.append(list(vehicle_position)[0])
+            local_path.y.append(list(vehicle_position)[1])
+            local_path.mission.append("obs_tmp")
+            pf.update(vehicle_position, goal_position, obstacles)
+            pf.run()
+        
+        self.local_path.x = local_path.x
+        self.local_path.y = local_path.y
+        self.shared.obstacles = obstacles
+
+        self.potential_lock.release()
+    
+    def find_wall_index(self, pointx, pointy):#가상벽에서 인덱스계산기 
         dist = []
         dx = []
         dy = []
-        for j in range(len(self.invisible_wall2)):
-            dx.append((pointx - self.invisible_wall2[j][0]))
-            dy.append((pointy - self.invisible_wall2[j][1]))
+        for j in range(len(self.invisible_wall)):
+            dx.append((pointx - self.invisible_wall[j][0]))
+            dy.append((pointy - self.invisible_wall[j][1]))
         for i in range(len(dx)):
             distx = dx[i]
             disty = dy[i]
@@ -804,24 +749,177 @@ class Motion():
         
         return ind
 
-    def invisible_wall(self):
+    def create_invisible_wall(self):#가상벽 생성기
+        self.potential_lock.acquire()
 
-        # virtual wall
-        self.k.acquire()
-        space = 0.5
-        left_offset = 2
-        right_offset = 2
-        # first_index = 1235
+        # wall parameters
+        space = 1
+        left_offset = 3
+        right_offset = 3
+
+
         first_index = 600
-        tm = np.array([self.global_path.x[first_index],self.global_path.y[first_index]])#내 인덱스에서 글로벌 좌표
-        self.inc = np.array([(self.global_path.x[first_index+5]-self.global_path.x[first_index]),(self.global_path.y[first_index+5]-self.global_path.y[first_index])])
-        self.inc = self.inc/(np.linalg.norm(self.inc))
-        self.inv_inc=np.array([-(self.global_path.y[first_index+1]-self.global_path.y[first_index]),(self.global_path.x[first_index+1]-self.global_path.x[first_index])])
-        self.inv_inc = self.inv_inc/(np.linalg.norm(self.inv_inc))
-        print('inv_inc',self.inv_inc)
+        start_point = np.array([self.global_path.x[first_index],self.global_path.y[first_index]])#내 인덱스에서 글로벌 좌표
+
+        global_path_incline = np.array([(self.global_path.x[first_index+5]-self.global_path.x[first_index]),(self.global_path.y[first_index+5]-self.global_path.y[first_index])])
+        global_path_incline = global_path_incline/(np.linalg.norm(global_path_incline))
+        self.jmtmp = global_path_incline
+
+        inv_inc = np.array([-(self.global_path.y[first_index+1]-self.global_path.y[first_index]),(self.global_path.x[first_index+1]-self.global_path.x[first_index])])
+        inv_inc = inv_inc/(np.linalg.norm(inv_inc))
+        self.jmtmp2 = inv_inc
+
         for i in range(200): 
-            tmp1= tm + self.inv_inc * left_offset + self.inc * i * space  # [x,y]
-            tmp2= tm - self.inv_inc * right_offset + self.inc * i * space
-            self.invisible_wall2.append(list(tmp1))
-            self.invisible_wall2.append(list(tmp2))
-        self.k.release()
+            left_wall = start_point + inv_inc * left_offset + global_path_incline * i * space  # [x,y]
+            right_wall = start_point - inv_inc * right_offset + global_path_incline * i * space
+            self.invisible_wall.append(list(left_wall))
+            self.invisible_wall.append(list(right_wall))
+
+        self.potential_lock.release()
+
+    def nearest_index2(self, pointx, pointy):
+        dist = []
+        dx = [pointx - x for x in self.obstacle_map_x[0:-1]]
+        dy = [pointy - y for y in self.obstacle_map_y[0:-1]]
+        for i in range(len(dx)):
+            dist.append(np.hypot(dx[i], dy[i]))
+
+        ind = int(np.argmin(dist))
+        
+        return ind
+ 
+    def get_three_points(self, middle_point, width, length):#점과 가로 세로로 장애물 세점 얻어내기
+        #TODO(1) : make four points
+        r = sqrt(width**2 + length**2)/2
+        alpha = atan2(width, length)
+        theta = radians(self.ego.heading)
+        p1 = [middle_point[0] + r*cos(alpha+theta), middle_point[1] + r*sin(alpha+theta)]
+        p2 = [middle_point[0] + r*cos(alpha-theta+pi), middle_point[1] + r*sin(alpha-theta+pi)]
+        p3 = [middle_point[0] + r*cos(alpha+theta+pi), middle_point[1] + r*sin(alpha+theta+pi)]
+        p4 = [middle_point[0] + r*cos(alpha-theta), middle_point[1] + r*sin(alpha-theta)]
+        points = [p1, p2, p3, p4]
+        self.marker_array = MarkerArray()
+        
+        for ind, point in enumerate(points):
+            msg = Marker()  # Create a new Marker message for each point
+            
+            msg.header.frame_id = "map"
+            msg.pose.position.x = point[0]
+            msg.pose.position.y = point[1]
+            msg.pose.position.z = 0.0
+            msg.pose.orientation.w = 1.0  # Identity orientation
+            
+            msg.id = ind  # Use the index as the ID for uniqueness
+            msg.type = Marker.SPHERE
+            msg.action = Marker.ADD
+            msg.color.a = 1.0  # Fully opaque color
+            msg.color.r = 1.0  # Red color
+            msg.color.g = 0.0
+            msg.color.b = 0.0
+            
+            msg.scale.x = 0.1
+            msg.scale.y = 0.1
+            msg.scale.z = 0.1
+            
+            msg.frame_locked = True
+            self.marker_array.markers.append(msg)
+        self.pub.publish(self.marker_array)
+
+
+        #1259~1684
+        ##################검증 완
+
+        point_idxs_N_distance = []
+        for point in points:
+           point_idx = self.nearest_index2(point[0], point[1])
+           distance = self.distance_points(point, [self.obstacle_map_x[point_idx], self.obstacle_map_y[point_idx]])
+           point_idxs_N_distance.append([point[0], point[1], point_idx, distance]) # 각 point에 대한 [x, y, index, distance]
+        
+
+        #TODO(2) : sort by index
+        point_idxs_N_distance.sort(key=lambda x: x[2])
+
+        for point in point_idxs_N_distance:
+            print(point[2])
+
+        #TODO(3) : delete the most distant point
+        max_value = max(point_idxs_N_distance, key=lambda x: x[3])
+        extracted_point_idxs_N_distance = [element for element in point_idxs_N_distance if element != max_value]
+
+        return extracted_point_idxs_N_distance
+    
+    def distance_points(self, point1, point2):#두 점 사이 거리 계산기
+        dx = point1[0]-point2[0]
+        dy = point1[1]-point2[1]
+        return hypot(dx, dy)
+    
+    def left_or_right(self, middle_point):#왼쪽, 오른쪽 판단기
+        obs_idx = self.nearest_index2(middle_point[0], middle_point[1])
+        global_path_vector = np.array([self.obstacle_map_x[obs_idx+3]-self.obstacle_map_x[obs_idx],
+                                       self.obstacle_map_y[obs_idx+3]-self.obstacle_map_y[obs_idx], 
+                                       0                                                        ])
+        obs_from_path_vector = np.array([middle_point[0]-self.obstacle_map_x[obs_idx], 
+                                         middle_point[1]-self.obstacle_map_y[obs_idx], 
+                                         0                                          ])
+
+        if np.cross(global_path_vector, obs_from_path_vector)[2]>=0:
+            print("obstacle is on left")
+            return "left"
+        else:
+            print("obstacle is on right")
+            return "right"
+
+    def rotate_vector(self, original_vector, angle):#회전 행렬 적용
+        rotation_matrix = np.array([
+            [cos(angle), sin(angle)],
+            [-sin(angle), cos(angle)]
+        ])
+        rotated_vector = np.dot(rotation_matrix, original_vector)
+        return rotated_vector
+
+    def find_target_points(self, direction, extracted_point_idxs_N_distance): #
+        offset = 2.5
+        if direction == "left":
+            angle = -pi/2
+        if direction == "right":
+            angle = pi/2
+
+        middle_points = []
+        indices = []
+        for point in extracted_point_idxs_N_distance:
+            global_path_vector = np.array([
+                self.obstacle_map_x[point[2]+3]-self.obstacle_map_x[point[2]],
+                self.obstacle_map_y[point[2]+3]-self.obstacle_map_y[point[2]]])
+            global_path_unit_vector = global_path_vector/np.linalg.norm(global_path_vector)
+            wall_point = np.array([self.obstacle_map_x[point[2]],self.obstacle_map_y[point[2]]]) + self.rotate_vector(global_path_unit_vector, angle) * offset
+            
+            middle_point = [(point[0]+wall_point[0])/2, (point[1]+wall_point[1])/2] 
+            middle_points.append(middle_point)
+
+            indices.append(point[2])
+
+        return middle_points, indices[0], indices[-1] # 시작점+얘+끝점 해서 큐빅돌리기.
+    
+    def make_path(self, middle_points, start_ind, final_ind) :
+        start_offset = - 5
+        final_offset = 5
+        tmp_x = []
+        tmp_y = []
+        tmp_x.append(self.obstacle_map_x[start_ind + start_offset])
+        tmp_y.append(self.obstacle_map_y[start_ind + start_offset])
+        for point in middle_points: 
+            tmp_x.append(point[0])
+            tmp_y.append(point[1])
+        tmp_x.append(self.obstacle_map_x[final_ind + final_offset])
+        tmp_y.append(self.obstacle_map_y[final_ind + final_offset])
+        tmp_x, tmp_y ,_,_,_ = calc_spline_course(tmp_x, tmp_y)
+        self.global_path.x = self.obstacle_map_x[:start_ind + start_offset - 1] + tmp_x + self.obstacle_map_x[final_ind + final_offset + 1:]
+        self.global_path.y = self.obstacle_map_y[:start_ind + start_offset - 1] + tmp_y + self.obstacle_map_y[final_ind + final_offset + 1:]
+        tmp = []
+        for i in range(len(self.global_path.x)):
+            tmp.append('obs_tmp')
+        self.global_path.mission =tmp
+
+   
+        
+    

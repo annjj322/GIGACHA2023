@@ -878,11 +878,11 @@ class Motion():
         return rotated_vector
 
     def find_target_points(self, direction, extracted_point_idxs_N_distance): #
-        offset = 2.5
+        offset = 4
         if direction == "left":
-            angle = -pi/2
-        if direction == "right":
             angle = pi/2
+        if direction == "right":
+            angle = -pi/2
 
         middle_points = []
         indices = []
@@ -901,20 +901,20 @@ class Motion():
         return middle_points, indices[0], indices[-1] # 시작점+얘+끝점 해서 큐빅돌리기.
     
     def make_path(self, middle_points, start_ind, final_ind) :
-        start_offset = - 5
-        final_offset = 5
+        start_offset = - 30
+        final_offset = 10
         tmp_x = []
         tmp_y = []
-        tmp_x.append(self.obstacle_map_x[start_ind + start_offset])
-        tmp_y.append(self.obstacle_map_y[start_ind + start_offset])
+        tmp_x.append(self.obstacle_map_x[start_ind + start_offset - 3])
+        tmp_y.append(self.obstacle_map_y[start_ind + start_offset - 3])
         for point in middle_points: 
             tmp_x.append(point[0])
             tmp_y.append(point[1])
-        tmp_x.append(self.obstacle_map_x[final_ind + final_offset])
-        tmp_y.append(self.obstacle_map_y[final_ind + final_offset])
+        tmp_x.append(self.obstacle_map_x[final_ind + final_offset + 3])
+        tmp_y.append(self.obstacle_map_y[final_ind + final_offset + 3])
         tmp_x, tmp_y ,_,_,_ = calc_spline_course(tmp_x, tmp_y)
-        self.global_path.x = self.obstacle_map_x[:start_ind + start_offset - 1] + tmp_x + self.obstacle_map_x[final_ind + final_offset + 1:]
-        self.global_path.y = self.obstacle_map_y[:start_ind + start_offset - 1] + tmp_y + self.obstacle_map_y[final_ind + final_offset + 1:]
+        self.global_path.x = self.obstacle_map_x[:start_ind + start_offset - 4] + tmp_x + self.obstacle_map_x[final_ind + final_offset + 4:]
+        self.global_path.y = self.obstacle_map_y[:start_ind + start_offset - 4] + tmp_y + self.obstacle_map_y[final_ind + final_offset + 4 :]
         tmp = []
         for i in range(len(self.global_path.x)):
             tmp.append('obs_tmp')

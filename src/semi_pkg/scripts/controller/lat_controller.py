@@ -16,7 +16,7 @@ class LatController():
         while True:
             try:
                 if self.global_path.mission[self.ego.index] == "obs_tmp":
-                    return self.local_pure_pursuit()
+                    return self.pure_pursuit()
                     
                 else:
                     return self.pure_pursuit()

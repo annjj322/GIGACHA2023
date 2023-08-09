@@ -220,7 +220,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.05
       Style: Points
-      Topic: /vis_hy_test  
+      Topic: /vis_obstacles  
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

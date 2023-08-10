@@ -33,12 +33,12 @@ class Localizer(threading.Thread):
         self.ego = parent.shared.ego
         self.plan = parent.shared.plan
         self.global_path = parent.shared.global_path
+        self.local_path = parent.shared.local_path
         self.perception = parent.shared.perception
         self.read_global_path()  # only one time
         self.hAcc = 100000
         self.x = 0
         self.y = 0
-        # self.ego.index=3000
         self.index_finder()
 
 
@@ -138,10 +138,33 @@ class Localizer(threading.Thread):
                 min_idx = i
                 save_idx = i
         self.ego.index = min_idx
-        
-        
-        self.plan.mission_decision = self.global_path.mission[self.ego.index]       
-        
+        self.plan.mission_decision = self.global_path.mission[self.ego.index]    
+    
+    def local_index_finder(self):
+        if len(self.local_path.x) != 0:
+            min_dis = -1
+            min_idx = 0
+            step_size = 50
+            # save_idx = self.ego.index                    # for not decreasing index
+            save_idx = 0
+            # for i in range(max(self.ego.index - step_size, 0), self.ego.index + step_size):
+            for i in range(len(self.local_path.x)): 
+                try:
+                    dis = hypot(
+                        self.local_path.x[i] - self.ego.x, self.local_path.y[i] - self.ego.y)
+                except IndexError:
+                    break
+                if (min_dis > dis or min_dis == -1) and save_idx <= i:
+                    min_dis = dis
+                    min_idx = i
+                    save_idx = i
+            self.ego.local_index = min_idx
+        else:
+            self.ego.local_index = 0   
+            # print("here!!", len(self.local_path.mission))
+            # print("local_index", self.ego.local_index)
+            # self.plan.mission_decision = self.local_path.mission[self.ego.local_index]       
+            
     def dead_reckoning(self):
         if self.hAcc < 50 :
             self.ego.x = self.x
@@ -153,10 +176,11 @@ class Localizer(threading.Thread):
     def run(self):
         while True:
             self.index_finder()
+            self.local_index_finder()
             self.dead_reckoning()
             sleep(self.period)
 
-    def curvedBaseVelocity(self, gloabl_path, point_num):
+    def curvedBaseVelocity(self, global_path, point_num):
         car_max_speed = 20
         out_vel_plan = []
         r_list = []
@@ -166,12 +190,12 @@ class Localizer(threading.Thread):
             out_vel_plan.append(car_max_speed)
             r_list.append(0)
 
-        for i in range(point_num, len(gloabl_path.x) - point_num):
+        for i in range(point_num, len(global_path.x) - point_num):
             x_list = []
             y_list = []
             for box in range(-point_num, point_num):
-                x = gloabl_path.x[i+box]
-                y = gloabl_path.y[i+box]
+                x = global_path.x[i+box]
+                y = global_path.y[i+box]
                 x_list.append([-2*x, -2*y ,1])
                 y_list.append((-x*x) - (y*y))
 

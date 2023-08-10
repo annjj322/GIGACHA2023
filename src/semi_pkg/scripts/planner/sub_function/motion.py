@@ -158,11 +158,15 @@ class Motion():
         self.create_invisible_wall()
         self.trace = []
         self.prev = 0
-        self.flag = None
-        # self.obstacle_map_x = self.global_path.x[1259:1684]
-        # self.obstacle_map_y = self.global_path.y[1259:1684]
-        self.obstacle_map_x = self.global_path.x[1200:1700]
-        self.obstacle_map_y = self.global_path.y[1200:1700]
+        self.flag = None 
+        self.original_global_path_x = self.global_path.x.copy()
+        self.original_global_path_y = self.global_path.y.copy()
+        self.local_path_tmp = Path()
+        self.local_path_tmp.x = self.global_path.x[1200:1700]#ref
+        self.local_path_tmp.y = self.global_path.y[1200:1700]
+        # for _ in range(len(self.local_path_tmp.x)-1):
+        #     self.local_path.mission.append("obs_tmp")
+        
 
     def target_control(self, brake, speed):
         self.ego.target_brake = brake
@@ -727,8 +731,8 @@ class Motion():
             pf.update(vehicle_position, goal_position, obstacles)
             pf.run()
         
-        self.local_path.x = local_path.x
-        self.local_path.y = local_path.y
+        self.local_path_tmp.x = local_path.x
+        self.local_path_tmp.y = local_path.y
         self.shared.obstacles = obstacles
 
         self.potential_lock.release()
@@ -777,99 +781,105 @@ class Motion():
 
         self.potential_lock.release()
 
+
     def nearest_index2(self, pointx, pointy):
         dist = []
-        dx = [pointx - x for x in self.obstacle_map_x[0:-1]]
-        dy = [pointy - y for y in self.obstacle_map_y[0:-1]]
+        dx = [pointx - x for x in self.local_path_tmp.x[0:-1]]
+        dy = [pointy - y for y in self.local_path_tmp.y[0:-1]]
         for i in range(len(dx)):
             dist.append(np.hypot(dx[i], dy[i]))
 
         ind = int(np.argmin(dist))
         
         return ind
- 
-    def get_three_points(self, middle_point, width, length):#점과 가로 세로로 장애물 세점 얻어내기
-        #TODO(1) : make four points
-        r = sqrt(width**2 + length**2)/2
-        alpha = atan2(width, length)
-        theta = radians(self.ego.heading)
-        p1 = [middle_point[0] + r*cos(alpha+theta), middle_point[1] + r*sin(alpha+theta)]
-        p2 = [middle_point[0] + r*cos(alpha-theta+pi), middle_point[1] + r*sin(alpha-theta+pi)]
-        p3 = [middle_point[0] + r*cos(alpha+theta+pi), middle_point[1] + r*sin(alpha+theta+pi)]
-        p4 = [middle_point[0] + r*cos(alpha-theta), middle_point[1] + r*sin(alpha-theta)]
-        points = [p1, p2, p3, p4]
-        self.marker_array = MarkerArray()
-        
-        for ind, point in enumerate(points):
-            msg = Marker()  # Create a new Marker message for each point
+
+    def get_three_points(self, obstacles): #점과 가로 세로로 장애물 세점 얻어내기
+        extracted_point_idxs_N_distance = []
+
+        for obs in obstacles:
+            middle_point = obs[0]
+            width = obs[1]
+            length = obs[2]
+
+            #TODO(1) : make four points
+            r = sqrt(width**2 + length**2)/2
+            alpha = atan2(width, length)
+            theta = radians(self.ego.heading)
+            p1 = [middle_point[0] + r*cos(alpha+theta), middle_point[1] + r*sin(alpha+theta)]
+            p2 = [middle_point[0] + r*cos(alpha-theta+pi), middle_point[1] + r*sin(alpha-theta+pi)]
+            p3 = [middle_point[0] + r*cos(alpha+theta+pi), middle_point[1] + r*sin(alpha+theta+pi)]
+            p4 = [middle_point[0] + r*cos(alpha-theta), middle_point[1] + r*sin(alpha-theta)]
+            points = [p1, p2, p3, p4]
+            self.marker_array = MarkerArray()
             
-            msg.header.frame_id = "map"
-            msg.pose.position.x = point[0]
-            msg.pose.position.y = point[1]
-            msg.pose.position.z = 0.0
-            msg.pose.orientation.w = 1.0  # Identity orientation
+            for ind, point in enumerate(points):
+                msg = Marker()  # Create a new Marker message for each point
+                
+                msg.header.frame_id = "map"
+                msg.pose.position.x = point[0]
+                msg.pose.position.y = point[1]
+                msg.pose.position.z = 0.0
+                msg.pose.orientation.w = 1.0  # Identity orientation
+                
+                msg.id = ind  # Use the index as the ID for uniqueness
+                msg.type = Marker.SPHERE
+                msg.action = Marker.ADD
+                msg.color.a = 1.0  # Fully opaque color
+                msg.color.r = 1.0  # Red color
+                msg.color.g = 0.0
+                msg.color.b = 0.0
+                
+                msg.scale.x = 0.5
+                msg.scale.y = 0.5
+                msg.scale.z = 0.5
+                
+                msg.frame_locked = True
+                self.marker_array.markers.append(msg)
+
+            self.pub.publish(self.marker_array)
+
+            point_idxs_N_distance = []
+
+            direction = self.left_or_right(middle_point)
+            for point in points:
+                point_idx = self.nearest_index2(point[0], point[1])
+                distance = self.distance_points(point, [self.local_path_tmp.x[point_idx], self.local_path_tmp.y[point_idx]])
+                point_idxs_N_distance.append([point[0], point[1], point_idx, distance, direction]) # 각 point에 대한 [x, y, index, distance, direction]
             
-            msg.id = ind  # Use the index as the ID for uniqueness
-            msg.type = Marker.SPHERE
-            msg.action = Marker.ADD
-            msg.color.a = 1.0  # Fully opaque color
-            msg.color.r = 1.0  # Red color
-            msg.color.g = 0.0
-            msg.color.b = 0.0
-            
-            msg.scale.x = 0.1
-            msg.scale.y = 0.1
-            msg.scale.z = 0.1
-            
-            msg.frame_locked = True
-            self.marker_array.markers.append(msg)
-        self.pub.publish(self.marker_array)
+
+            #TODO(2) : sort by index
+            point_idxs_N_distance.sort(key=lambda x: x[2])
+
+            # for point in point_idxs_N_distance:
+            #     print(point[2])
 
 
-        #1259~1684
-        ##################검증 완
-
-        point_idxs_N_distance = []
-        for point in points:
-           point_idx = self.nearest_index2(point[0], point[1])
-           distance = self.distance_points(point, [self.obstacle_map_x[point_idx], self.obstacle_map_y[point_idx]])
-           point_idxs_N_distance.append([point[0], point[1], point_idx, distance]) # 각 point에 대한 [x, y, index, distance]
-        
-
-        #TODO(2) : sort by index
-        point_idxs_N_distance.sort(key=lambda x: x[2])
-
-        for point in point_idxs_N_distance:
-            print(point[2])
-
-        #TODO(3) : delete the most distant point
-        max_value = max(point_idxs_N_distance, key=lambda x: x[3])
-        extracted_point_idxs_N_distance = [element for element in point_idxs_N_distance if element != max_value]
+            #TODO(3) : delete the most distant point
+            max_value = max(point_idxs_N_distance, key=lambda x: x[3])
+            extracted_point_idxs_N_distance += [element for element in point_idxs_N_distance if element != max_value]
 
         return extracted_point_idxs_N_distance
     
-    def distance_points(self, point1, point2):#두 점 사이 거리 계산기
+    def distance_points(self, point1, point2): #두 점 사이 거리 계산기
         dx = point1[0]-point2[0]
         dy = point1[1]-point2[1]
         return hypot(dx, dy)
     
-    def left_or_right(self, middle_point):#왼쪽, 오른쪽 판단기
+    def left_or_right(self, middle_point): #왼쪽, 오른쪽 판단기
         obs_idx = self.nearest_index2(middle_point[0], middle_point[1])
-        global_path_vector = np.array([self.obstacle_map_x[obs_idx+3]-self.obstacle_map_x[obs_idx],
-                                       self.obstacle_map_y[obs_idx+3]-self.obstacle_map_y[obs_idx], 
+        global_path_vector = np.array([self.local_path_tmp.x[obs_idx+3]-self.local_path_tmp.x[obs_idx],
+                                       self.local_path_tmp.y[obs_idx+3]-self.local_path_tmp.y[obs_idx], 
                                        0                                                        ])
-        obs_from_path_vector = np.array([middle_point[0]-self.obstacle_map_x[obs_idx], 
-                                         middle_point[1]-self.obstacle_map_y[obs_idx], 
+        obs_from_path_vector = np.array([middle_point[0]-self.local_path_tmp.x[obs_idx], 
+                                         middle_point[1]-self.local_path_tmp.y[obs_idx], 
                                          0                                          ])
 
         if np.cross(global_path_vector, obs_from_path_vector)[2]>=0:
-            print("obstacle is on left")
             return "left"
         else:
-            print("obstacle is on right")
             return "right"
 
-    def rotate_vector(self, original_vector, angle):#회전 행렬 적용
+    def rotate_vector(self, original_vector, angle): #시계 회전 행렬
         rotation_matrix = np.array([
             [cos(angle), sin(angle)],
             [-sin(angle), cos(angle)]
@@ -877,48 +887,53 @@ class Motion():
         rotated_vector = np.dot(rotation_matrix, original_vector)
         return rotated_vector
 
-    def find_target_points(self, direction, extracted_point_idxs_N_distance): #
-        offset = 4
-        if direction == "left":
-            angle = pi/2
-        if direction == "right":
-            angle = -pi/2
+    def find_target_points(self, extracted_point_idxs_N_distance): #
+        offset = 5
 
         middle_points = []
         indices = []
         for point in extracted_point_idxs_N_distance:
+            if point[4] == "left":
+                angle = pi/2
+            if point[4] == "right":
+                angle = -pi/2
+
             global_path_vector = np.array([
-                self.obstacle_map_x[point[2]+3]-self.obstacle_map_x[point[2]],
-                self.obstacle_map_y[point[2]+3]-self.obstacle_map_y[point[2]]])
+                self.local_path_tmp.x[point[2]+3]-self.local_path_tmp.x[point[2]],
+                self.local_path_tmp.y[point[2]+3]-self.local_path_tmp.y[point[2]]])
             global_path_unit_vector = global_path_vector/np.linalg.norm(global_path_vector)
-            wall_point = np.array([self.obstacle_map_x[point[2]],self.obstacle_map_y[point[2]]]) + self.rotate_vector(global_path_unit_vector, angle) * offset
+            wall_point = np.array([self.local_path_tmp.x[point[2]],self.local_path_tmp.y[point[2]]]) + self.rotate_vector(global_path_unit_vector, angle) * offset
             
             middle_point = [(point[0]+wall_point[0])/2, (point[1]+wall_point[1])/2] 
             middle_points.append(middle_point)
 
             indices.append(point[2])
 
-        return middle_points, indices[0], indices[-1] # 시작점+얘+끝점 해서 큐빅돌리기.
+        return middle_points, indices[0], indices[-1] 
     
     def make_path(self, middle_points, start_ind, final_ind) :
-        start_offset = - 30
+        start_offset = -30
         final_offset = 10
         tmp_x = []
         tmp_y = []
-        tmp_x.append(self.obstacle_map_x[start_ind + start_offset - 3])
-        tmp_y.append(self.obstacle_map_y[start_ind + start_offset - 3])
+        tmp_x.append(self.local_path_tmp.x[start_ind + start_offset - 3])
+        tmp_y.append(self.local_path_tmp.y[start_ind + start_offset - 3])
         for point in middle_points: 
-            tmp_x.append(point[0])
+            tmp_x.append(point[0]) 
             tmp_y.append(point[1])
-        tmp_x.append(self.obstacle_map_x[final_ind + final_offset + 3])
-        tmp_y.append(self.obstacle_map_y[final_ind + final_offset + 3])
+        tmp_x.append(self.local_path_tmp.x[final_ind + final_offset + 3])
+        tmp_y.append(self.local_path_tmp.y[final_ind + final_offset + 3])
         tmp_x, tmp_y ,_,_,_ = calc_spline_course(tmp_x, tmp_y)
-        self.global_path.x = self.obstacle_map_x[:start_ind + start_offset - 4] + tmp_x + self.obstacle_map_x[final_ind + final_offset + 4:]
-        self.global_path.y = self.obstacle_map_y[:start_ind + start_offset - 4] + tmp_y + self.obstacle_map_y[final_ind + final_offset + 4 :]
-        tmp = []
-        for i in range(len(self.global_path.x)):
-            tmp.append('obs_tmp')
-        self.global_path.mission =tmp
+        # self.local_path_tmp.x = self.local_path_tmp.x[:start_ind + start_offset - 4] + tmp_x + self.local_path_tmp.x[final_ind + final_offset + 4:]
+        # self.local_path_tmp.y = self.local_path_tmp.y[:start_ind + start_offset - 4] + tmp_y + self.local_path_tmp.y[final_ind + final_offset + 4 :]
+        self.local_path.x = self.local_path_tmp.x[:start_ind + start_offset - 4] + tmp_x + self.local_path_tmp.x[final_ind + final_offset + 4:]
+        self.local_path.y = self.local_path_tmp.y[:start_ind + start_offset - 4] + tmp_y + self.local_path_tmp.y[final_ind + final_offset + 4 :]
+  
+        
+    def regain_global_path(self):
+        if self.ego.index >= len(self.local_path_tmp.x)-5:
+            self.local_path_tmp.x = self.original_global_path_x
+            self.local_path_tmp.y = self.original_global_path_y
 
    
         

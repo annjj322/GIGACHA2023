@@ -54,18 +54,18 @@ class MotionPlanner(threading.Thread):
                     self.motion.delivery_step4()
                 
                 elif self.plan.motion_decision == "obs_tmp":
-                    #104.7031, 125.9656
-                    #2,4 
                     # self.motion.potential_field()
-                    mid =[104.7031, 125.9656]
-                    ex = self.motion.get_three_points(mid, 2, 4)
-                    dir = self.motion.left_or_right(mid)
-                    middle, start_ind, final_ind = self.motion.find_target_points(dir, ex)
+                    mid =[98.1, 116.1]
+                    mid2 =[106.0, 123.5]
+                    ex = self.motion.get_three_points([[mid, 2, 5], [mid2, 2, 5]])
+                    middle, start_ind, final_ind = self.motion.find_target_points(ex)
                     self.motion.make_path(middle, start_ind, final_ind )
+                    # self.motion.regain_global_path()
+
                 else:
                     pass
 
             except IndexError:
                 print("++++++++motion_planner+++++++++")
 
-            sleep(self.period)
+                sleep(self.period)

@@ -42,24 +42,25 @@ class Master(threading.Thread):
         self.init_thread(self.visualizer)
 
         while True:
-            # print('------------------------------------- \
-            #       \nBehavior_decision : {} | Input speed : {} \
-            #       \nTarget speed : {:.2f} | Steer : {:.2f} \
-            #       \n Target index : {} | Lookahead : {} \
-            #       \nIndex : {} | Heading : {} \
-            #       \nx : {} | y : {} \
-            #       '.format(
-            #         self.shared.plan.behavior_decision, 
-            #         self.shared.ego.input_speed,
-            #         self.shared.ego.target_speed, 
-            #         self.shared.ego.input_steer, 
-            #         self.controller.lat_controller.target_index,
-            #         self.controller.lat_controller.lookahead,
-            #         self.shared.ego.index,
-            #         self.shared.ego.heading,
-            #         self.shared.ego.x,
-            #         self.shared.ego.y
-            #         ))
+            print('------------------------------------- \
+                  \nBehavior_decision : {} | Input speed : {} \
+                  \nTarget speed : {:.2f} | Steer : {:.2f} \
+                  \n Target index : {} | Lookahead : {} \
+                  \nIndex : {} | Local index : {} \
+                  \nx : {:.2f} | y : {:.2f} | Heading : {:.2f} \
+                  '.format(
+                    self.shared.plan.behavior_decision, 
+                    self.shared.ego.input_speed,
+                    self.shared.ego.target_speed, 
+                    self.shared.ego.input_steer, 
+                    self.controller.lat_controller.target_index,
+                    self.controller.lat_controller.lookahead,
+                    self.shared.ego.index,
+                    self.shared.ego.local_index,
+                    self.shared.ego.x,
+                    self.shared.ego.y,
+                    self.shared.ego.heading
+                    ))
             
             self.checker_all()
 

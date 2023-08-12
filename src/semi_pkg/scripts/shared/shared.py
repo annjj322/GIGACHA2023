@@ -15,7 +15,7 @@ class Shared:
 
         # for planner
         self.global_path = Path()
-        self.local_path=Path()
+        self.local_path = Path()
         self.plan = Plan()
 
         # for parking

@@ -10,6 +10,7 @@ class MotionPlanner(threading.Thread):
         self.plan = parent.shared.plan
         self.ego = parent.shared.ego
         self.parking = parent.shared.park
+        self.perception = parent.shared.perception
 
         # self.trajectory = self.plan.trajectory # to controller
         self.global_path = self.shared.global_path  # from localizer
@@ -55,12 +56,19 @@ class MotionPlanner(threading.Thread):
                 
                 elif self.plan.motion_decision == "obs_tmp":
                     # self.motion.potential_field()
-                    mid =[98.1, 116.1]
-                    mid2 =[106.0, 123.5]
-                    ex = self.motion.get_three_points([[mid, 2, 5], [mid2, 2, 5]])
+
+                    # Obs avoidance for morai
+                    # mid =[98.1, 116.1]
+                    # mid2 =[106.0, 122.4]
+                    # ex = self.motion.get_three_points([[mid, 2.3, 5.9], [mid2, 2.3, 5.9]])
+                    # middle, start_ind, final_ind = self.motion.find_target_points(ex)
+                    # self.motion.make_path(middle, start_ind, final_ind)
+
+
+                    # Obs avoidance for real world
+                    ex = self.motion.get_three_points(self.perception.obs_list)
                     middle, start_ind, final_ind = self.motion.find_target_points(ex)
-                    self.motion.make_path(middle, start_ind, final_ind )
-                    # self.motion.regain_global_path()
+                    self.motion.make_path(middle, start_ind, final_ind)
 
                 else:
                     pass

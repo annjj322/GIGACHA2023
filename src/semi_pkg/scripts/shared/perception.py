@@ -13,6 +13,7 @@ class Perception_():
       rospy.Subscriber("/left_markers/Local",MarkerArray,self.narrow_local_callback)
       rospy.Subscriber("/right_markers/Local",MarkerArray,self.narrow_local_callback)
       rospy.Subscriber("/stop_local",MarkerArray,self.local2Global)
+      rospy.Subscriber("/markers",MarkerArray,self.obs_callback)
 
       self.rx = None
       self.ry = None
@@ -31,7 +32,12 @@ class Perception_():
       self.right_x = []
       self.right_y = []
 
+      
       self.local2global = False
+
+      ##obs_avoidance_labotary
+      self.obs_list = []
+
       
    def obs_callback(self, msg):
       if len(msg.markers) != 0:
@@ -81,3 +87,12 @@ class Perception_():
 
    def local2Global(self, msg):
       self.local2global = True
+
+   def obs_callback(self, data):
+      self.obs_list = []
+      for marker in data.markers:
+         x = marker.pose.position.x
+         y = marker.pose.position.y
+         width = marker.pose.scale.y
+         length = marker.pose.scale.x
+         self.obs_list.append([[x,y],width,length])

@@ -166,6 +166,8 @@ class Motion():
         self.local_path_tmp.y = self.global_path.y[1200:1700]
         # for _ in range(len(self.local_path_tmp.x)-1):
         #     self.local_path.mission.append("obs_tmp")
+        self.cnt = 0 # obs visualization
+        self.initial = True # jjamtong
         
 
     def target_control(self, brake, speed):
@@ -781,7 +783,6 @@ class Motion():
 
         self.potential_lock.release()
 
-
     def nearest_index2(self, pointx, pointy):
         dist = []
         dx = [pointx - x for x in self.local_path_tmp.x[0:-1]]
@@ -795,7 +796,6 @@ class Motion():
 
     def get_three_points(self, obstacles): #점과 가로 세로로 장애물 세점 얻어내기
         extracted_point_idxs_N_distance = []
-
         for obs in obstacles:
             middle_point = obs[0]
             width = obs[1]
@@ -810,34 +810,6 @@ class Motion():
             p3 = [middle_point[0] + r*cos(alpha+theta+pi), middle_point[1] + r*sin(alpha+theta+pi)]
             p4 = [middle_point[0] + r*cos(alpha-theta), middle_point[1] + r*sin(alpha-theta)]
             points = [p1, p2, p3, p4]
-            self.marker_array = MarkerArray()
-            
-            for ind, point in enumerate(points):
-                msg = Marker()  # Create a new Marker message for each point
-                
-                msg.header.frame_id = "map"
-                msg.pose.position.x = point[0]
-                msg.pose.position.y = point[1]
-                msg.pose.position.z = 0.0
-                msg.pose.orientation.w = 1.0  # Identity orientation
-                
-                msg.id = ind  # Use the index as the ID for uniqueness
-                msg.type = Marker.SPHERE
-                msg.action = Marker.ADD
-                msg.color.a = 1.0  # Fully opaque color
-                msg.color.r = 1.0  # Red color
-                msg.color.g = 0.0
-                msg.color.b = 0.0
-                
-                msg.scale.x = 0.5
-                msg.scale.y = 0.5
-                msg.scale.z = 0.5
-                
-                msg.frame_locked = True
-                self.marker_array.markers.append(msg)
-
-            self.pub.publish(self.marker_array)
-
             point_idxs_N_distance = []
 
             direction = self.left_or_right(middle_point)
@@ -857,6 +829,39 @@ class Motion():
             #TODO(3) : delete the most distant point
             max_value = max(point_idxs_N_distance, key=lambda x: x[3])
             extracted_point_idxs_N_distance += [element for element in point_idxs_N_distance if element != max_value]
+            
+            self.marker_array = MarkerArray()
+            
+            for ind, point in enumerate(extracted_point_idxs_N_distance):
+                msg = Marker()  # Create a new Marker message for each point
+                
+                msg.header.frame_id = "map"
+                msg.pose.position.x = point[0]
+                msg.pose.position.y = point[1]
+                msg.pose.position.z = 0.0
+                msg.pose.orientation.w = 1.0  # Identity orientation
+                
+                msg.id = ind  # Use the index as the ID for uniqueness
+                msg.type = Marker.SPHERE
+                msg.action = Marker.ADD
+                msg.color.a = 1.0  # Fully opaque color
+                # msg.color.r = 1.0  # Red color
+                # # msg.color.g = 0.0
+                # msg.color.b = 0.0
+                msg.color.r = (self.cnt+0.3)%3  # Red color
+                msg.color.g = (self.cnt+0.6)%3
+                msg.color.b = (self.cnt+0.9)%3
+                self.cnt += 1
+
+                msg.scale.x = 0.5
+                msg.scale.y = 0.5
+                msg.scale.z = 0.5
+                
+                msg.frame_locked = True
+                self.marker_array.markers.append(msg)
+            
+            self.pub.publish(self.marker_array)
+        
 
         return extracted_point_idxs_N_distance
     
@@ -888,7 +893,7 @@ class Motion():
         return rotated_vector
 
     def find_target_points(self, extracted_point_idxs_N_distance): #
-        offset = 5
+        offset = 4
 
         middle_points = []
         indices = []
@@ -912,29 +917,21 @@ class Motion():
         return middle_points, indices[0], indices[-1] 
     
     def make_path(self, middle_points, start_ind, final_ind) :
-        start_offset = -30
-        final_offset = 10
-        tmp_x = []
-        tmp_y = []
-        tmp_x.append(self.local_path_tmp.x[start_ind + start_offset - 3])
-        tmp_y.append(self.local_path_tmp.y[start_ind + start_offset - 3])
-        for point in middle_points: 
-            tmp_x.append(point[0]) 
-            tmp_y.append(point[1])
-        tmp_x.append(self.local_path_tmp.x[final_ind + final_offset + 3])
-        tmp_y.append(self.local_path_tmp.y[final_ind + final_offset + 3])
-        tmp_x, tmp_y ,_,_,_ = calc_spline_course(tmp_x, tmp_y)
-        # self.local_path_tmp.x = self.local_path_tmp.x[:start_ind + start_offset - 4] + tmp_x + self.local_path_tmp.x[final_ind + final_offset + 4:]
-        # self.local_path_tmp.y = self.local_path_tmp.y[:start_ind + start_offset - 4] + tmp_y + self.local_path_tmp.y[final_ind + final_offset + 4 :]
-        self.local_path.x = self.local_path_tmp.x[:start_ind + start_offset - 4] + tmp_x + self.local_path_tmp.x[final_ind + final_offset + 4:]
-        self.local_path.y = self.local_path_tmp.y[:start_ind + start_offset - 4] + tmp_y + self.local_path_tmp.y[final_ind + final_offset + 4 :]
-  
-        
-    def regain_global_path(self):
-        if self.ego.index >= len(self.local_path_tmp.x)-5:
-            self.local_path_tmp.x = self.original_global_path_x
-            self.local_path_tmp.y = self.original_global_path_y
-
-   
-        
-    
+        if self.initial:
+            start_offset = -60
+            final_offset = 10
+            tmp_x = []
+            tmp_y = []
+            tmp_x.append(self.local_path_tmp.x[start_ind + start_offset - 3])
+            tmp_y.append(self.local_path_tmp.y[start_ind + start_offset - 3])
+            for point in middle_points: 
+                tmp_x.append(point[0]) 
+                tmp_y.append(point[1])
+            tmp_x.append(self.local_path_tmp.x[final_ind + final_offset + 3])
+            tmp_y.append(self.local_path_tmp.y[final_ind + final_offset + 3])
+            tmp_x, tmp_y ,_,_,_ = calc_spline_course(tmp_x, tmp_y)
+            # self.local_path_tmp.x = self.local_path_tmp.x[:start_ind + start_offset - 4] + tmp_x + self.local_path_tmp.x[final_ind + final_offset + 4:]
+            # self.local_path_tmp.y = self.local_path_tmp.y[:start_ind + start_offset - 4] + tmp_y + self.local_path_tmp.y[final_ind + final_offset + 4 :]
+            self.local_path.x = self.local_path_tmp.x[:start_ind + start_offset - 4] + tmp_x + self.local_path_tmp.x[final_ind + final_offset + 4:]
+            self.local_path.y = self.local_path_tmp.y[:start_ind + start_offset - 4] + tmp_y + self.local_path_tmp.y[final_ind + final_offset + 4 :]
+            self.initial = False
